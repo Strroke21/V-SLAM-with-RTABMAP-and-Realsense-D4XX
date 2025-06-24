@@ -84,7 +84,7 @@ class SlamLocalization(Node):
 def main(args=None):
     rclpy.init(args=args)
     # Replace with your actual MAVLink connection string!
-    vehicle = connect('10.61.225.90:14550')
+    vehicle = connect('10.61.225.90:14550') #replace with your connection string
     localization = SlamLocalization(vehicle)
     rclpy.spin(localization)
     localization.destroy_node()
