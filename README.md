@@ -176,3 +176,6 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
   transform_timeout:=2.0
 ```
 
+### **3. Run Slam node (ardupilot)**
+
+``` python3 slam_localization.py ```
