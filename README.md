@@ -170,7 +170,7 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
   use_sim_time:=true \
   approx_sync:=true \
   qos:=2 \
-  rviz:=true \
+  rviz:=false \
   queue_size:=100 \
   wait_for_transform:=true \
   transform_timeout:=2.0
