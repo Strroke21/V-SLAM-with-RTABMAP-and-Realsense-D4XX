@@ -178,4 +178,7 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
 
 ### **3. Run Slam node (ardupilot)**
 
-``` python3 slam_localization.py ```
+```bash
+ python3 slam_localization.py 
+ 
+```
