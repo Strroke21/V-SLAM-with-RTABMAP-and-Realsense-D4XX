@@ -9,7 +9,7 @@ from nav_msgs.msg import Odometry
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 
 reset_counter = 1
-jump_threshold = 0.1 # in meters, from trials and errors, should be relative to how frequent is the position data obtained
+jump_threshold = 0.1 # in meters, from trials and errors
 
 
 def vision_position_send(vehicle, x, y, z, roll, pitch, yaw):
@@ -34,6 +34,15 @@ def connect(connection_string):
     
     return vehicle
 
+def enable_data_stream(vehicle,stream_rate):
+
+    vehicle.wait_heartbeat()
+    vehicle.mav.request_data_stream_send(
+    vehicle.target_system, 
+    vehicle.target_component,
+    mavutil.mavlink.MAV_DATA_STREAM_ALL,
+    stream_rate,1)
+
 def increment_reset_counter():
     global reset_counter
     if reset_counter >= 255:
@@ -45,26 +54,22 @@ class SlamLocalization(Node):
         super().__init__('localization')
         self.vehicle = vehicle
         self.prev_position = None
-        # Subscribe to the /rtabmap/localization_pose topic
-        self.subscription = self.create_subscription(
-            PoseWithCovarianceStamped,
-            '/rtabmap/localization_pose',
-            self.localization_pose_callback,
-            10
-        )
         qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
         self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
 
-    def localization_pose_callback(self, msg):
+
+    def odom_callback(self, msg):
+        linear = msg.twist.twist.linear
+        cov = msg.twist.covariance
         position = msg.pose.pose.position
         orientation = msg.pose.pose.orientation
         q = [orientation.x, orientation.y, orientation.z, orientation.w]
-        cov = msg.pose.covariance  # 6x6 covariance matrix
         roll, pitch, yaw = euler_from_quaternion(q)
+        self.get_logger().info(f'roll: {roll}, pitch: {pitch}, yaw: {yaw}')
+        self.get_logger().info(f'Position data: {position.x}, {position.y}, {position.z}')
+        self.get_logger().info(f'Linear Velocity - x: {linear.x}, y: {linear.y}, z: {linear.z}')
         vision_position_send(self.vehicle, position.x, position.y, position.z, roll, pitch, yaw)
-        self.get_logger().info(f'Sending vision position estimate to vehicle')
-        self.get_logger().info(f'Pos_x: {position.x}, Pos_y: {position.y}, Pos_z: {position.z}, Roll= {roll}, Pitch: {pitch}, Yaw: {yaw}, reset_counter: {reset_counter}')
-    
+        vision_speed_send(self.vehicle, linear.x, linear.y, linear.z)
         if self.prev_position is not None:
             delta_translation = [position.x - self.prev_position.x, position.y - self.prev_position.y, position.z - self.prev_position.z]
             position_displacement = np.linalg.norm(delta_translation)
@@ -74,17 +79,12 @@ class SlamLocalization(Node):
 
         self.prev_position = position
 
-    def odom_callback(self, msg):
-        linear = msg.twist.twist.linear
-        cov = msg.twist.covariance
-        self.get_logger().info(f'Linear Velocity - x: {linear.x}, y: {linear.y}, z: {linear.z}')
-        vision_speed_send(self.vehicle, linear.x, linear.y, linear.z)
-
 
 def main(args=None):
     rclpy.init(args=args)
-    # Replace with your actual MAVLink connection string!
-    vehicle = connect('10.61.225.90:14550') #replace with your connection string
+    vehicle = connect('udp:10.61.225.90:14550') 
+    enable_data_stream(vehicle, 100)
+    time.sleep(1)  
     localization = SlamLocalization(vehicle)
     rclpy.spin(localization)
     localization.destroy_node()
