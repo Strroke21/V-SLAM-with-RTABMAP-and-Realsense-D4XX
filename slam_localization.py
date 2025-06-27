@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseWithCovarianceStamped
 import time
 from transformations import euler_from_quaternion
 from pymavlink import mavutil
