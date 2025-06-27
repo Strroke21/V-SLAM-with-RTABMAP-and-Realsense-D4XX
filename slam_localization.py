@@ -7,13 +7,42 @@ import numpy as np
 from nav_msgs.msg import Odometry
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 import os
+import sys
 
 os.environ["MAVLINK20"] = "1"
 
 reset_counter = 1
 jump_threshold = 0.1 # in meters, from trials and errors
 jump_speed_threshold = 20 # in m/s
+fcu_addr = '10.61.225.90:14550'
+start_time = time.time()
+home_lat = int(19.1345054) 
+home_lon =  int(72.9120648)
+home_alt = 53
 
+def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
+    x = 0
+    y = 0
+    z = 0
+    q = [1, 0, 0, 0]   # w x y z
+
+    approach_x = 0
+    approach_y = 0
+    approach_z = 1
+
+    vehicle.mav.set_home_position_send(
+        1,
+        home_lat, 
+        home_lon,
+        home_alt,
+        x,
+        y,
+        z,
+        q,
+        approach_x,
+        approach_y,
+        approach_z
+    )
 
 def vision_position_send(vehicle, x, y, z, roll, pitch, yaw, cov, reset_counter):
 
@@ -36,12 +65,21 @@ def vision_speed_send(vehicle, vx, vy, vz, cov,reset_counter):
         )
     vehicle.mav.send(msg)
 
-
 def connect(connection_string):
 
     vehicle = mavutil.mavlink_connection(connection_string)
     
     return vehicle
+
+def progress(string):
+    print(string, file=sys.stdout)
+    sys.stdout.flush()
+
+def send_msg_to_gcs(vehicle,text_to_be_sent):
+    # MAV_SEVERITY: 0=EMERGENCY 1=ALERT 2=CRITICAL 3=ERROR, 4=WARNING, 5=NOTICE, 6=INFO, 7=DEBUG, 8=ENUM_END
+    text_msg = 'D455: ' + text_to_be_sent
+    vehicle.mav.statustext_send(mavutil.mavlink.MAV_SEVERITY_INFO, text_msg.encode())
+    progress("INFO: %s" % text_to_be_sent)
 
 def enable_data_stream(vehicle,stream_rate):
 
@@ -51,6 +89,11 @@ def enable_data_stream(vehicle,stream_rate):
     vehicle.target_component,
     mavutil.mavlink.MAV_DATA_STREAM_ALL,
     stream_rate,1)
+
+def forward_telemetry(vehicle, gcs_addr):
+    gcs = mavutil.mavlink_connection(gcs_addr)
+    msg = vehicle.recv_match(blocking=True)
+    gcs.mav.send(msg)
 
 def increment_reset_counter():
     global reset_counter
@@ -64,7 +107,8 @@ class SlamLocalization(Node):
         self.vehicle = vehicle
         self.prev_position = None
         self.prev_vel = None
-        qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
+        self.counter = 0
+        qos = QoSProfile(depth=0, reliability=ReliabilityPolicy.BEST_EFFORT)
         self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
 
 
@@ -97,13 +141,19 @@ class SlamLocalization(Node):
 
         self.prev_position = position
         self.prev_vel = linear_vel
-
+        self.counter += 1
+        current_time = time.time()
+        data_hz_per_second = self.counter / (current_time - start_time)
+        self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
+        
 
 def main(args=None):
     rclpy.init(args=args)
-    vehicle = connect('udp:10.61.225.90:14550') 
+    vehicle = connect(fcu_addr) 
     enable_data_stream(vehicle, 100)
     time.sleep(1)  
+    send_msg_to_gcs(vehicle, "Slam localization node started")
+    set_default_home_position(vehicle, home_lat, home_lon, home_alt)
     localization = SlamLocalization(vehicle)
     rclpy.spin(localization)
     localization.destroy_node()

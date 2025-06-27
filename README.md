@@ -147,7 +147,12 @@ echo "source ~/realsense_ws/install/setup.bash" >> ~/.bashrc
 To test the installation, launch the RealSense camera node:
 
 ```bash
-ros2 launch realsense2_camera rs_launch.py
+ros2 launch realsense2_camera rs_launch.py \
+  enable_depth:=true \
+  enable_color:=true \
+  depth_module.depth_profile:=640,480,60 \
+  rgb_camera.color_profile:=640,480,60
+
 ```
 
 ## IV. RTAB-Map Installation
