@@ -186,7 +186,7 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
 ```bash
 SERIAL1_PROTOCOL = 2 (MAVLink2).
 
-SERIAL1_BAUD = 1500 (1500000 baud)
+SERIAL1_BAUD = 115 (115200 baud)
 
 VISO_TYPE = 1
 
@@ -201,8 +201,6 @@ EK3_SRC1_POSZ = 1 (Baro which is safer)
 EK3_SRC1_VELZ = 0 (you can set it to 6 if 1st flight test looks good)
 
 EK3_SRC1_YAW = 6 (ExternalNav)
-
-COMPASS_USE = 0, COMPASS_USE2 = 0, COMPASS_USE3 = 0 to disable all compasses
 
 
 ```
