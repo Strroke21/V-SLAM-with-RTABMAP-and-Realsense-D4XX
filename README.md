@@ -190,15 +190,13 @@ SERIAL1_BAUD = 115 (115200 baud)
 
 VISO_TYPE = 1
 
-VISO_DELAY_MS = 50
-
 EK3_SRC1_POSXY = 6 (ExternalNav)
 
 EK3_SRC1_VELXY = 6 (ExternalNav)
 
 EK3_SRC1_POSZ = 1 (Baro which is safer)
 
-EK3_SRC1_VELZ = 0 (you can set it to 6 if 1st flight test looks good)
+EK3_SRC1_VELZ = 6 (you can set it to 6 if 1st flight test looks good)
 
 EK3_SRC1_YAW = 6 (ExternalNav)
 
