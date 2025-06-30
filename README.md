@@ -188,7 +188,7 @@ SERIAL1_PROTOCOL = 2 (MAVLink2).
 
 SERIAL1_BAUD = 115 (115200 baud)
 
-VISO_TYPE = 1
+VISO_TYPE = 1 (mavlink)
 
 EK3_SRC1_POSXY = 6 (ExternalNav)
 
