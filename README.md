@@ -176,7 +176,7 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
   approx_sync:=true \
   qos:=2 \
   rviz:=false \
-  queue_size:=100 \
+  queue_size:=100 
 ```
 
 ### **3. Ardupilot Parameter setup**
