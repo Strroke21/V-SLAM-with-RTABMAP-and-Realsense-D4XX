@@ -177,8 +177,6 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
   qos:=2 \
   rviz:=false \
   queue_size:=100 \
-  wait_for_transform:=true \
-  transform_timeout:=2.0
 ```
 
 ### **3. Ardupilot Parameter setup**
