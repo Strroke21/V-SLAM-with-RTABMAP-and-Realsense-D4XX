@@ -1,4 +1,4 @@
-# ROS 2 Humble Setup Guide
+# ROS 2 Humble Setup Guide (Ubuntu 22.04 LTS)
 
 ## I. ROS 2 Humble Setup
 
@@ -31,12 +31,10 @@ Add the ROS 2 GPG key with apt.
 ```bash
 sudo apt update && sudo apt install curl -y
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-```
 
-Then add the repository to your sources list.
+echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
-```bash
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+sudo apt update
 ```
 
 ### **3. Install ROS 2 Packages**
