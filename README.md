@@ -1,6 +1,10 @@
 # ROS 2 Humble Setup Guide (Ubuntu 22.04 LTS)
 
-## I. ROS 2 Humble Setup
+## I. ROS 2 Humble Setup or run
+
+```bash
+    ./install.sh
+```
 
 ### **1. Set Locale**
 
