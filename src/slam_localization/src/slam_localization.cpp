@@ -187,4 +187,7 @@ int main(int argc, char* argv[]) {
 }
 
 
+// build env: colcon build --packages-select slam_localization --symlink-install
+// source env: source install/setup.bash
+// run node: ros2 run slam_localization slam_node
 
