@@ -14,10 +14,11 @@ os.environ["MAVLINK20"] = "1"
 reset_counter = 1
 jump_threshold = 0.1 # in meters, from trials and errors
 jump_speed_threshold = 20 # in m/s
-fcu_addr = '10.61.225.90:14550'
+fcu_addr = '/dev/ttyACM3'  
+fcu_baud = 115200
 start_time = time.time()
-home_lat = int(19.1345054) 
-home_lon =  int(72.9120648)
+home_lat = 19.1345054
+home_lon =  72.9120648
 home_alt = 53
 
 def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
@@ -32,9 +33,9 @@ def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
 
     vehicle.mav.set_home_position_send(
         1,
-        home_lat, 
-        home_lon,
-        home_alt,
+        int(home_lat * 1e7), 
+        int(home_lon * 1e7),
+        int(home_alt),
         x,
         y,
         z,
@@ -65,9 +66,9 @@ def vision_speed_send(vehicle, vx, vy, vz, cov,reset_counter):
         )
     vehicle.mav.send(msg)
 
-def connect(connection_string):
+def connect(connection_string, baud):
 
-    vehicle = mavutil.mavlink_connection(connection_string)
+    vehicle = mavutil.mavlink_connection(connection_string,baud)
     
     return vehicle
 
@@ -149,7 +150,7 @@ class SlamLocalization(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    vehicle = connect(fcu_addr) 
+    vehicle = connect(fcu_addr,baud=fcu_baud) 
     enable_data_stream(vehicle, 100)
     time.sleep(1)  
     send_msg_to_gcs(vehicle, "Slam localization node started")

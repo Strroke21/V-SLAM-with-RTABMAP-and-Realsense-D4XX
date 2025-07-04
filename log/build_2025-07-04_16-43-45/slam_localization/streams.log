@@ -1,0 +1,50 @@
+[0.006s] Invoking command in '/home/deathstroke/Desktop/slam_ros/build/slam_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/deathstroke/Desktop/slam_ros/build/slam_localization -- -j32 -l32
+[0.032s] [35m[1mConsolidate compiler generated dependencies of target slam_node[0m
+[0.045s] [ 50%] [32mBuilding CXX object CMakeFiles/slam_node.dir/src/slam_localization.cpp.o[0m
+[1.285s] [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_statustext(mavsdk::MavlinkPassthrough&, const string&)[m[K’:
+[1.285s] [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:39:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+[1.285s]    39 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+[1.285s]       |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+[1.285s] In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[1.285s] [01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+[1.285s]    95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+[1.285s]       |                       [01;36m[K^~~~~~~~~~~~[m[K
+[1.285s] [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_home_position(mavsdk::MavlinkPassthrough&)[m[K’:
+[1.285s] [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:51:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+[1.285s]    51 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+[1.285s]       |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+[1.285s] In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[1.285s] [01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+[1.285s]    95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+[1.286s]       |                       [01;36m[K^~~~~~~~~~~~[m[K
+[1.286s] [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_vision_speed(mavsdk::MavlinkPassthrough&, float, float, float, const std::array<float, 9>&)[m[K’:
+[1.286s] [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:74:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+[1.286s]    74 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+[1.286s]       |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+[1.286s] In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[1.286s] [01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+[1.286s]    95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+[1.286s]       |                       [01;36m[K^~~~~~~~~~~~[m[K
+[4.003s] [100%] [32m[1mLinking CXX executable slam_node[0m
+[4.333s] [100%] Built target slam_node
+[4.343s] Invoked command in '/home/deathstroke/Desktop/slam_ros/build/slam_localization' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/deathstroke/Desktop/slam_ros/build/slam_localization -- -j32 -l32
+[4.350s] Invoking command in '/home/deathstroke/Desktop/slam_ros/build/slam_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/deathstroke/Desktop/slam_ros/build/slam_localization
+[4.355s] -- Install configuration: ""
+[4.356s] -- Execute custom install script
+[4.356s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/lib/slam_localization/slam_node
+[4.356s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/package_run_dependencies/slam_localization
+[4.356s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/parent_prefix_path/slam_localization
+[4.356s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/ament_prefix_path.sh
+[4.356s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/ament_prefix_path.dsv
+[4.356s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/path.sh
+[4.357s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/path.dsv
+[4.357s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.bash
+[4.357s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.sh
+[4.357s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.zsh
+[4.357s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.dsv
+[4.357s] -- Symlinking: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/package.dsv
+[4.362s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/packages/slam_localization
+[4.362s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/cmake/slam_localizationConfig.cmake
+[4.362s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/cmake/slam_localizationConfig-version.cmake
+[4.362s] -- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/package.xml
+[4.363s] Invoked command in '/home/deathstroke/Desktop/slam_ros/build/slam_localization' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/deathstroke/Desktop/slam_ros/build/slam_localization

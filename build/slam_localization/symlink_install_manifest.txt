@@ -1,0 +1,16 @@
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/lib/slam_localization/slam_node
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/package_run_dependencies/slam_localization
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/parent_prefix_path/slam_localization
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/ament_prefix_path.sh
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/ament_prefix_path.dsv
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/path.sh
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/path.dsv
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.bash
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.sh
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.zsh
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.dsv
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/package.dsv
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/packages/slam_localization
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/cmake/slam_localizationConfig.cmake
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/cmake/slam_localizationConfig-version.cmake
+/home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/package.xml
