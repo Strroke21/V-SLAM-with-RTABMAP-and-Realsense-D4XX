@@ -209,7 +209,8 @@ EK3_SRC1_YAW = 6 (ExternalNav)
 ### **4. Run Slam node (ardupilot)**
 
 ```bash
- python3 slam_localization.py 
+#for python
+python3 slam_localization.py 
 
 # for cpp run
 colcon build --packages-select slam_localization --symlink-install #once
