@@ -218,3 +218,9 @@ source install/setup.bash
 ros2 run slam_localization slam_node
  
 ```
+
+### **5. To see Saved maps Run
+
+```bash
+rtabmap ~/.ros/rtabmap.db
+```
