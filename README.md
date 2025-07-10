@@ -152,8 +152,8 @@ To test the installation, launch the RealSense camera node:
 ros2 launch realsense2_camera rs_launch.py \
   enable_depth:=true \
   enable_color:=true \
-  depth_module.depth_profile:=848,480,60 \
-  rgb_camera.color_profile:=848,480,60
+  depth_module.depth_profile:=640,480,60 \
+  rgb_camera.color_profile:=640,480,60
   align_depth:=true
 
 ```
