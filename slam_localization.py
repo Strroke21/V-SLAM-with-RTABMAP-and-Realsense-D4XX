@@ -21,10 +21,6 @@ home_lat = 19.1345054
 home_lon =  72.9120648
 home_alt = 53
 
-# downfacing camera parameters
-# x = vio_z
-# y = vio_y
-# z = vio_x 
 
 def get_local_position(vehicle):
     while True:
