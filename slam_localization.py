@@ -21,6 +21,8 @@ home_lat = 19.1345054
 home_lon =  72.9120648
 home_alt = 53
 
+#camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = -slam_pitch, cam_yaw = slam_roll
+#camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z, cam_roll = slam_roll, cam_pitch = -slam_pitch, cam_yaw = -slam_yaw
 
 def get_local_position(vehicle):
     while True:
