@@ -135,11 +135,11 @@ class SlamLocalization(Node):
         cam_roll, cam_pitch, cam_yaw = yaw, pitch, roll  # Adjusted for downfacing camera
         self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
         self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
-        gps_ned = get_local_position(self.vehicle)
-        self.get_logger().info(f'[GPS]: {gps_ned[0]}, {gps_ned[1]}, {gps_ned[2]}')
+        # gps_ned = get_local_position(self.vehicle)
+        # self.get_logger().info(f'[GPS]: {gps_ned[0]}, {gps_ned[1]}, {gps_ned[2]}')
         self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
-        # vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
-        # vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
+        vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
+        vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
 
         self.prev_position = position
         self.prev_vel = linear_vel
