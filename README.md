@@ -152,9 +152,10 @@ To test the installation, launch the RealSense camera node:
 ros2 launch realsense2_camera rs_launch.py \
   enable_depth:=true \
   enable_color:=true \
+  enable_sync:=true \
   depth_module.depth_profile:=640,480,60 \
-  rgb_camera.color_profile:=640,480,60
-  align_depth:=true
+  rgb_camera.color_profile:=640,480,60 
+  align_depth.enable:=true 
 
 ```
 
@@ -184,7 +185,7 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
   transform_timeout:=2.0
 ```
 
-### **3. Ardupilot Parameter setup**
+### **3. Ardupilot Parameter setup (Camera Downfacing)**
 
 ```bash
 SERIAL1_PROTOCOL = 2 (MAVLink2).

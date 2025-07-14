@@ -14,12 +14,29 @@ os.environ["MAVLINK20"] = "1"
 reset_counter = 1
 jump_threshold = 0.1 # in meters, from trials and errors
 jump_speed_threshold = 20 # in m/s
-fcu_addr = '/dev/ttyACM3'  
+fcu_addr = '/dev/ttyACM0'  
 fcu_baud = 115200
 start_time = time.time()
 home_lat = 19.1345054
 home_lon =  72.9120648
 home_alt = 53
+
+# downfacing camera parameters
+# x = vio_z
+# y = vio_y
+# z = vio_x 
+
+def get_local_position(vehicle):
+    while True:
+        msg = vehicle.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        if msg is not None:
+            pos_x = msg.x # meters
+            pos_y = msg.y  # meters
+            pos_z = msg.z  # Meters
+            vx = msg.vx
+            vy = msg.vy
+            vz = msg.vz
+            return [pos_x,pos_y,pos_z,vx,vy,vz]
 
 def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
     x = 0
@@ -50,9 +67,7 @@ def vision_position_send(vehicle, x, y, z, roll, pitch, yaw, cov, reset_counter)
     msg = vehicle.mav.vision_position_estimate_encode(
         int(time.time() * 1e6),
         x, y, z,
-        roll, pitch, yaw,
-        cov,
-        reset_counter    
+        roll, pitch, yaw  
     )
     vehicle.mav.send(msg)
 
@@ -60,9 +75,7 @@ def vision_speed_send(vehicle, vx, vy, vz, cov,reset_counter):
 
     msg = vehicle.mav.vision_speed_estimate_encode(
         int(time.time() * 1e6),
-        vx, vy, vz,
-        cov,
-        reset_counter
+        vx, vy, vz
         )
     vehicle.mav.send(msg)
 
@@ -115,30 +128,20 @@ class SlamLocalization(Node):
 
     def odom_callback(self, msg):
         linear_vel = msg.twist.twist.linear
-        vel_cov = msg.twist.covariance
         position = msg.pose.pose.position
         orientation = msg.pose.pose.orientation
-        pos_cov = msg.pose.covariance
         q = [orientation.x, orientation.y, orientation.z, orientation.w]
         roll, pitch, yaw = euler_from_quaternion(q)
-        self.get_logger().info(f'[Orientation]: roll: {roll}, pitch: {pitch}, yaw: {yaw}')
-        self.get_logger().info(f'[Position data]: {position.x}, {position.y}, {position.z}')
-        self.get_logger().info(f'[Linear Velocity]: x: {linear_vel.x}, y: {linear_vel.y}, z: {linear_vel.z}')
-        vision_position_send(self.vehicle, position.x, position.y, position.z, roll, pitch, yaw,pos_cov,reset_counter)
-        vision_speed_send(self.vehicle, linear_vel.x, linear_vel.y, linear_vel.z, vel_cov, reset_counter)
-        if self.prev_position is not None:
-            delta_translation = [position.x - self.prev_position.x, position.y - self.prev_position.y, position.z - self.prev_position.z]
-            position_displacement = np.linalg.norm(delta_translation)
-            if position_displacement > jump_threshold:
-                self.get_logger().warn(f'Position jump detected: {position_displacement} m, resetting reset_counter.')
-                increment_reset_counter()
-
-        if self.prev_vel is not None:
-            delta_velocity = [linear_vel.x - self.prev_vel.x, linear_vel.y - self.prev_vel.y, linear_vel.z - self.prev_vel.z]
-            speed_delta = np.linalg.norm(delta_velocity)
-            if speed_delta > jump_speed_threshold:
-                self.get_logger().warn(f'Speed jump detected: {speed_delta} m/s, resetting reset_counter.')
-                increment_reset_counter()
+        cam_x, cam_y, cam_z = position.z, -position.y, position.x  # Adjusted for downfacing camera
+        cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
+        cam_roll, cam_pitch, cam_yaw = yaw, -pitch, roll  # Adjusted for downfacing camera
+        self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
+        self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
+        gps_ned = get_local_position(self.vehicle)
+        self.get_logger().info(f'[GPS]: {gps_ned[0]}, {gps_ned[1]}, {gps_ned[2]}')
+        self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
+        # vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
+        # vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
 
         self.prev_position = position
         self.prev_vel = linear_vel
