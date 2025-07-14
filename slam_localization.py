@@ -132,7 +132,7 @@ class SlamLocalization(Node):
         roll, pitch, yaw = euler_from_quaternion(q)
         cam_x, cam_y, cam_z = position.z, -position.y, position.x  # Adjusted for downfacing camera
         cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
-        cam_roll, cam_pitch, cam_yaw = yaw, -pitch, roll  # Adjusted for downfacing camera
+        cam_roll, cam_pitch, cam_yaw = yaw, pitch, roll  # Adjusted for downfacing camera
         self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
         self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
         gps_ned = get_local_position(self.vehicle)
