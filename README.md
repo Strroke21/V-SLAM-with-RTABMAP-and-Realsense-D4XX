@@ -210,7 +210,7 @@ EK3_SRC1_YAW = 6 (ExternalNav)
 
 ```bash
 #for python
-python3 slam_localization.py 
+python3 slam_localization.py #up to date
 
 # for cpp run
 colcon build --packages-select slam_localization --symlink-install #once
