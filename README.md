@@ -224,3 +224,8 @@ ros2 run slam_localization slam_node
 ```bash
 rtabmap ~/.ros/rtabmap.db
 ```
+
+### **6. Flight Tests with RTABMAP SLAM
+
+![alt text](images/ft1407.png)
+![alt text](images/ft1707.png)
