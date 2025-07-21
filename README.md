@@ -215,7 +215,7 @@ python3 slam_localization.py #up to date
 # for cpp run
 colcon build --packages-select slam_localization --symlink-install #once
 source install/setup.bash
-ros2 run slam_localization slam_node #coordinate transform not updated (update before testing for CPP)
+ros2 run slam_localization slam_node #updated
  
 ```
 
