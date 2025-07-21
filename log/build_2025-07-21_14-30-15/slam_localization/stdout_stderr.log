@@ -1,0 +1,95 @@
+-- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 16.0.12 (/opt/ros/humble/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+-- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+-- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+-- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+-- Using RMW implementation 'rmw_fastrtps_cpp' as default
+-- Found nav_msgs: 4.9.0 (/opt/ros/humble/share/nav_msgs/cmake)
+-- Found tf2: 0.25.13 (/opt/ros/humble/share/tf2/cmake)
+-- Found tf2_ros: 0.25.13 (/opt/ros/humble/share/tf2_ros/cmake)
+-- Found tf2_geometry_msgs: 0.25.13 (/opt/ros/humble/share/tf2_geometry_msgs/cmake)
+-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/deathstroke/Desktop/slam_ros/build/slam_localization
+[35m[1mConsolidate compiler generated dependencies of target slam_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/slam_node.dir/src/slam_localization.cpp.o[0m
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_statustext(mavsdk::MavlinkPassthrough&, const string&)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:39:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+   39 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+      |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+   95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+      |                       [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_home_position(mavsdk::MavlinkPassthrough&)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:51:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+   51 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+      |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+   95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+      |                       [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_vision_position(mavsdk::MavlinkPassthrough&, float, float, float, float, float, float)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:56:46:[m[K [01;31m[Kerror: [m[Ktoo few arguments to function ‘[01m[Kuint16_t mavlink_msg_vision_position_estimate_pack(uint8_t, uint8_t, mavlink_message_t*, uint64_t, float, float, float, float, float, float, const float*, uint8_t)[m[K’
+   56 |     [01;31m[Kmavlink_msg_vision_position_estimate_pack([m[K
+      |     [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^[m[K
+   57 | [01;31m[K        passthrough.get_our_sysid(), passthrough.get_our_compid(), &msg,[m[K
+      |         [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+   58 | [01;31m[K        static_cast<uint64_t>(rclcpp::Clock().now().nanoseconds() / 1000),[m[K
+      |         [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+   59 | [01;31m[K        x, y, z, roll, pitch, yaw[m[K
+      |         [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~[m[K             
+   60 | [01;31m[K    )[m[K;
+      |     [01;31m[K~[m[K                                         
+In file included from [01m[K/usr/local/include/mavsdk/mavlink/common/common.h:2814[m[K,
+                 from [01m[K/usr/local/include/mavsdk/mavlink/common/mavlink.h:32[m[K,
+                 from [01m[K/usr/local/include/mavsdk/mavlink_include.h:3[m[K,
+                 from [01m[K/usr/local/include/mavsdk/mavsdk.h:15[m[K,
+                 from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:5[m[K:
+[01m[K/usr/local/include/mavsdk/mavlink/common/mavlink_msg_vision_position_estimate.h:79:24:[m[K [01;36m[Knote: [m[Kdeclared here
+   79 | static inline uint16_t [01;36m[Kmavlink_msg_vision_position_estimate_pack[m[K(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
+      |                        [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_vision_speed(mavsdk::MavlinkPassthrough&, float, float, float)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:65:43:[m[K [01;31m[Kerror: [m[Ktoo few arguments to function ‘[01m[Kuint16_t mavlink_msg_vision_speed_estimate_pack(uint8_t, uint8_t, mavlink_message_t*, uint64_t, float, float, float, const float*, uint8_t)[m[K’
+   65 |     [01;31m[Kmavlink_msg_vision_speed_estimate_pack([m[K
+      |     [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^[m[K
+   66 | [01;31m[K        passthrough.get_our_sysid(), passthrough.get_our_compid(), &msg,[m[K
+      |         [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+   67 | [01;31m[K        static_cast<uint64_t>(rclcpp::Clock().now().nanoseconds() / 1000),[m[K
+      |         [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+   68 | [01;31m[K        vx, vy, vz[m[K
+      |         [01;31m[K~~~~~~~~~~[m[K                         
+   69 | [01;31m[K    )[m[K;
+      |     [01;31m[K~[m[K                                      
+In file included from [01m[K/usr/local/include/mavsdk/mavlink/common/common.h:2815[m[K,
+                 from [01m[K/usr/local/include/mavsdk/mavlink/common/mavlink.h:32[m[K,
+                 from [01m[K/usr/local/include/mavsdk/mavlink_include.h:3[m[K,
+                 from [01m[K/usr/local/include/mavsdk/mavsdk.h:15[m[K,
+                 from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:5[m[K:
+[01m[K/usr/local/include/mavsdk/mavlink/common/mavlink_msg_vision_speed_estimate.h:67:24:[m[K [01;36m[Knote: [m[Kdeclared here
+   67 | static inline uint16_t [01;36m[Kmavlink_msg_vision_speed_estimate_pack[m[K(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
+      |                        [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:70:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+   70 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+      |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+   95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+      |                       [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In member function ‘[01m[Kvoid SlamLocalizationNode::odom_callback(nav_msgs::msg::Odometry_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:121:29:[m[K [01;31m[Kerror: [m[Ktoo many arguments to function ‘[01m[Kvoid send_vision_position(mavsdk::MavlinkPassthrough&, float, float, float, float, float, float)[m[K’
+  121 |         [01;31m[Ksend_vision_position(passthrough_, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw, pos_cov)[m[K;
+      |         [01;31m[K~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:54:6:[m[K [01;36m[Knote: [m[Kdeclared here
+   54 | void [01;36m[Ksend_vision_position[m[K(MavlinkPassthrough& passthrough, float x, float y, float z, float roll, float pitch, float yaw) {
+      |      [01;36m[K^~~~~~~~~~~~~~~~~~~~[m[K
+gmake[2]: *** [CMakeFiles/slam_node.dir/build.make:76: CMakeFiles/slam_node.dir/src/slam_localization.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/slam_node.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

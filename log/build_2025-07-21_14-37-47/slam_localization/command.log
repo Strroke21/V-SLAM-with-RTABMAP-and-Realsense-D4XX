@@ -1,0 +1,2 @@
+Invoking command in '/home/deathstroke/Desktop/slam_ros/build/slam_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/deathstroke/Desktop/slam_ros/build/slam_localization -- -j32 -l32
+Invoked command in '/home/deathstroke/Desktop/slam_ros/build/slam_localization' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/deathstroke/Desktop/slam_ros/build/slam_localization -- -j32 -l32

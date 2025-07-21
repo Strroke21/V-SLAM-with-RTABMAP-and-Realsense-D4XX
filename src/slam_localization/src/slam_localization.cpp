@@ -51,25 +51,25 @@ void send_home_position(MavlinkPassthrough& passthrough) {
     passthrough.send_message(msg);
 }
 
-void send_vision_position(MavlinkPassthrough& passthrough, float x, float y, float z, float roll, float pitch, float yaw, const std::array<float, 21>& cov) {
+void send_vision_position(MavlinkPassthrough& passthrough, float x, float y, float z, float roll, float pitch, float yaw) {
     mavlink_message_t msg;
     mavlink_msg_vision_position_estimate_pack(
         passthrough.get_our_sysid(), passthrough.get_our_compid(), &msg,
         static_cast<uint64_t>(rclcpp::Clock().now().nanoseconds() / 1000),
         x, y, z, roll, pitch, yaw,
-        cov.data(),     // covariance pointer (float*)
-        cov.size()      // covariance length (uint8_t)
+        0, // Assuming no covariance for simplicity
+        0 // Reset counter (not used)
     );
 }
 
-void send_vision_speed(MavlinkPassthrough& passthrough, float vx, float vy, float vz, const std::array<float, 9>& cov) {
+void send_vision_speed(MavlinkPassthrough& passthrough, float vx, float vy, float vz) {
     mavlink_message_t msg;
     mavlink_msg_vision_speed_estimate_pack(
         passthrough.get_our_sysid(), passthrough.get_our_compid(), &msg,
         static_cast<uint64_t>(rclcpp::Clock().now().nanoseconds() / 1000),
         vx, vy, vz,
-        cov.data(),  // covariance pointer
-        cov.size()   // covariance length
+        0, // Assuming no covariance for simplicity
+        0 // Reset counter (not used)
     );
     passthrough.send_message(msg);
 }
@@ -103,9 +103,18 @@ private:
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
 
-        RCLCPP_INFO(get_logger(), "[Pos] x: %.2f, y: %.2f, z: %.2f", pos.x, pos.y, pos.z);
+        float cam_x = pos.z;
+        float cam_y = -pos.y;
+        float cam_z = pos.x;
+        float cam_roll = yaw;
+        float cam_pitch = pitch;
+        float cam_yaw = roll;
+        float cam_vx = lin.z;
+        float cam_vy = -lin.y;
+        float cam_vz = lin.x;
+
+        RCLCPP_INFO(get_logger(), "[SLAM] x: %.2f, y: %.2f, z: %.2f", cam_x, cam_y, cam_z);
         RCLCPP_INFO(get_logger(), "[Ori] roll: %.2f, pitch: %.2f, yaw: %.2f", roll, pitch, yaw);
-        RCLCPP_INFO(get_logger(), "[Vel] x: %.2f, y: %.2f, z: %.2f", lin.x, lin.y, lin.z);
 
         std::array<float, 21> pos_cov{};
         std::copy_n(msg->pose.covariance.begin(), 21, pos_cov.begin());
@@ -113,35 +122,8 @@ private:
         std::array<float, 9> vel_cov{};
         std::copy_n(msg->twist.covariance.begin(), 9, vel_cov.begin());
 
-        send_vision_position(passthrough_, pos.x, pos.y, pos.z, roll, pitch, yaw, pos_cov);
-        send_vision_speed(passthrough_, lin.x, lin.y, lin.z, vel_cov);
-
-        if (has_prev_pos_) {
-            float dx = pos.x - prev_x_;
-            float dy = pos.y - prev_y_;
-            float dz = pos.z - prev_z_;
-            float dist = std::sqrt(dx*dx + dy*dy + dz*dz);
-            if (dist > jump_threshold) {
-                RCLCPP_WARN(get_logger(), "Position jump detected: %.2f m", dist);
-                increment_reset_counter();
-            }
-        }
-
-        if (has_prev_vel_) {
-            float dvx = lin.x - prev_vx_;
-            float dvy = lin.y - prev_vy_;
-            float dvz = lin.z - prev_vz_;
-            float delta_speed = std::sqrt(dvx*dvx + dvy*dvy + dvz*dvz);
-            if (delta_speed > jump_speed_threshold) {
-                RCLCPP_WARN(get_logger(), "Speed jump detected: %.2f m/s", delta_speed);
-                increment_reset_counter();
-            }
-        }
-
-        prev_x_ = pos.x; prev_y_ = pos.y; prev_z_ = pos.z;
-        prev_vx_ = lin.x; prev_vy_ = lin.y; prev_vz_ = lin.z;
-        has_prev_pos_ = true;
-        has_prev_vel_ = true;
+        send_vision_position(passthrough_, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw);
+        send_vision_speed(passthrough_, cam_vx, cam_vy, cam_vz);
     }
 
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_;
@@ -155,7 +137,7 @@ private:
 int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
     
-    std::string fcu_address = "tcp://127.0.0.1:5763"; // ✅ note: use `tcp://`, not `tcp:`
+    std::string fcu_address = "/dev/ttyACM0"; //fcu address
     
     Mavsdk::Configuration config{ComponentType::GroundStation};
     Mavsdk mavsdk(config);  // ✅ only constructor that works
@@ -190,4 +172,3 @@ int main(int argc, char* argv[]) {
 // build env: colcon build --packages-select slam_localization --symlink-install
 // source env: source install/setup.bash
 // run node: ros2 run slam_localization slam_node
-

@@ -1,0 +1,46 @@
+[35m[1mConsolidate compiler generated dependencies of target slam_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/slam_node.dir/src/slam_localization.cpp.o[0m
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_statustext(mavsdk::MavlinkPassthrough&, const string&)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:39:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+   39 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+      |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+   95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+      |                       [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_home_position(mavsdk::MavlinkPassthrough&)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:51:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+   51 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+      |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+   95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+      |                       [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:[m[K In function ‘[01m[Kvoid send_vision_speed(mavsdk::MavlinkPassthrough&, float, float, float)[m[K’:
+[01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:74:29:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmavsdk::MavlinkPassthrough::Result mavsdk::MavlinkPassthrough::send_message(mavlink_message_t&)[m[K’ is deprecated [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wdeprecated-declarations-Wdeprecated-declarations]8;;[m[K]
+   74 |     [01;35m[Kpassthrough.send_message(msg)[m[K;
+      |     [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+In file included from [01m[K/home/deathstroke/Desktop/slam_ros/src/slam_localization/src/slam_localization.cpp:6[m[K:
+[01m[K/usr/local/include/mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h:95:23:[m[K [01;36m[Knote: [m[Kdeclared here
+   95 |     DEPRECATED Result [01;36m[Ksend_message[m[K(mavlink_message_t& message);
+      |                       [01;36m[K^~~~~~~~~~~~[m[K
+[100%] [32m[1mLinking CXX executable slam_node[0m
+[100%] Built target slam_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/lib/slam_localization/slam_node
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/package_run_dependencies/slam_localization
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/parent_prefix_path/slam_localization
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/ament_prefix_path.sh
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/ament_prefix_path.dsv
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/path.sh
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/environment/path.dsv
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.bash
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.sh
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.zsh
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/local_setup.dsv
+-- Symlinking: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/package.dsv
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/ament_index/resource_index/packages/slam_localization
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/cmake/slam_localizationConfig.cmake
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/cmake/slam_localizationConfig-version.cmake
+-- Up-to-date symlink: /home/deathstroke/Desktop/slam_ros/install/slam_localization/share/slam_localization/package.xml

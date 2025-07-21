@@ -69,5 +69,6 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "__nullptr": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/deathstroke/Desktop/slam_ros/src/slam_localization"
 }

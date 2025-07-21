@@ -1,0 +1,4 @@
+# Ignore ArduPilot/Drone log and parameter files
+*.parm
+*.tlog
+*.tlog.raw
