@@ -21,8 +21,8 @@ home_lat = 19.1345054
 home_lon =  72.9120648
 home_alt = 53
 
-#camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = -slam_pitch, cam_yaw = slam_roll
-#camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z, cam_roll = slam_roll, cam_pitch = -slam_pitch, cam_yaw = -slam_yaw
+#camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = slam_pitch, cam_yaw = slam_roll
+#camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z, cam_roll = slam_roll, cam_pitch = slam_pitch, cam_yaw = slam_yaw
 
 def get_local_position(vehicle):
     while True:
@@ -60,7 +60,7 @@ def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
         approach_z
     )
 
-def vision_position_send(vehicle, x, y, z, roll, pitch, yaw, cov, reset_counter):
+def vision_position_send(vehicle, x, y, z, roll, pitch, yaw):
 
     msg = vehicle.mav.vision_position_estimate_encode(
         int(time.time() * 1e6),
@@ -69,7 +69,7 @@ def vision_position_send(vehicle, x, y, z, roll, pitch, yaw, cov, reset_counter)
     )
     vehicle.mav.send(msg)
 
-def vision_speed_send(vehicle, vx, vy, vz, cov,reset_counter):
+def vision_speed_send(vehicle, vx, vy, vz):
 
     msg = vehicle.mav.vision_speed_estimate_encode(
         int(time.time() * 1e6),
