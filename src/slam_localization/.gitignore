@@ -2,3 +2,4 @@
 *.parm
 *.tlog
 *.tlog.raw
+*.db
