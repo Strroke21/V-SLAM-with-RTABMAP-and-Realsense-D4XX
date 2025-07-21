@@ -229,3 +229,4 @@ rtabmap ~/.ros/rtabmap.db
 
 ![alt text](images/ft1407.png)
 ![alt text](images/ft1707.png)
+![alt text](images/slam_GPS.png)
