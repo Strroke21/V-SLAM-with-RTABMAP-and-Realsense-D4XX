@@ -8,6 +8,7 @@ from nav_msgs.msg import Odometry
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 import os
 import sys
+import csv
 
 os.environ["MAVLINK20"] = "1"
 
@@ -122,7 +123,11 @@ class SlamLocalization(Node):
         self.counter = 0
         qos = QoSProfile(depth=0, reliability=ReliabilityPolicy.BEST_EFFORT)
         self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
-
+        self.csv_file = open('slam_log.csv', mode='a', newline='')
+        self.csv_writer = csv.writer(self.csv_file)
+        self.csv_writer.writerow([
+            'SLAM_X', 'SLAM_Y', 'SLAM_Z'
+        ])
 
     def odom_callback(self, msg):
         linear_vel = msg.twist.twist.linear
@@ -147,6 +152,14 @@ class SlamLocalization(Node):
         current_time = time.time()
         data_hz_per_second = self.counter / (current_time - start_time)
         self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
+        self.csv_writer.writerow([
+            cam_x, cam_y, cam_z
+        ])
+
+    def destroy_node(self):
+        super().destroy_node()
+        self.csv_file.close()
+        self.get_logger().info("CSV log file closed.")
         
 
 def main(args=None):
