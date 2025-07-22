@@ -118,7 +118,6 @@ cd ~/realsense_ws/src
 ```bash
 git clone https://github.com/IntelRealSense/realsense-ros.git
 cd realsense-ros
-git checkout ros2
 
 source /opt/ros/humble/setup.bash
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
