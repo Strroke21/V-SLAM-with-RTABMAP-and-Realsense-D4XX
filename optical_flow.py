@@ -16,6 +16,11 @@ def connect(connection_string):
 
     return vehicle
 
+def set_parameter(vehicle, param_name, param_value, param_type=mavutil.mavlink.MAV_PARAM_TYPE_REAL32):
+    # Send PARAM_SET message to change the parameter
+    vehicle.mav.param_set_send(vehicle.target_system,vehicle.target_component,param_name.encode('utf-8'),param_value,param_type)
+    #usage set_parameter(vehicle, "PARAM_NAME", 1)
+
 def send_optical_flow(vehicle, flow_x, flow_y, flow_comp_m_x, flow_comp_m_y, quality, ground_distance):
     msg = vehicle.mav.optical_flow_encode(
             int(time.time() * 1e6),  # time_usec
@@ -108,6 +113,12 @@ class OpticalFlowNode(Node):
 def main():
     vehicle = connect(fcu_addr)
     enable_data_stream(vehicle, 200)
+    set_parameter(vehicle, 'FLOW_TYPE', 5)  # mavlink
+    set_parameter(vehicle, 'EK3_SRC1_POSXY',0)  # none
+    set_parameter(vehicle, 'EK3_SRC1_VELXY', 5)  # optical flow
+    set_parameter(vehicle, 'EK3_SRC1_VELZ', 0)  # none
+    set_parameter(vehicle, 'EK3_SRC1_POSZ', 1)  #baro
+    set_parameter(vehicle, 'EK3_SRC1_YAW', 1)  #compass
     rclpy.init()
     node = OpticalFlowNode(vehicle)
     rclpy.spin(node)
