@@ -62,7 +62,7 @@ class OpticalFlowNode(Node):
         self.prev_gray = None
         self.prev_time = None
         self.focal_px = 525  # default if not received yet
-        self.ground_distance = get_rangefinder_data(vehicle)
+        self.ground_distance = get_rangefinder_data(self.vehicle)
         self.sensor_id = 0
 
     def info_callback(self, msg):
