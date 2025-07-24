@@ -92,12 +92,12 @@ class OpticalFlowNode(Node):
             # --- Transform raw pixel shift to drone body frame (dpix) ---
             # Camera X → Body Y, Camera Y → -Body X (down-facing camera)
             flow_x = int(-fy)  # Forward (Body X)
-            flow_y = int(-fx)  # Right   (Body Y)
+            flow_y = int(fx)  # Right   (Body Y)
 
             # --- Convert to meters/second (compensated) ---
             # Apply same transformation to metric flow
             flow_comp_m_x = (-fy * self.ground_distance) / (self.focal_px * dt)  # Forward (Body X)
-            flow_comp_m_y = (-fx * self.ground_distance) / (self.focal_px * dt)  # Right   (Body Y)
+            flow_comp_m_y = (fx * self.ground_distance) / (self.focal_px * dt)  # Right   (Body Y)
 
 
             magnitude = np.linalg.norm(flow, axis=2)
