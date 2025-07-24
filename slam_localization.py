@@ -26,6 +26,29 @@ home_alt = 53
 #camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = slam_pitch, cam_yaw = slam_roll
 #camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z, cam_roll = slam_roll, cam_pitch = slam_pitch, cam_yaw = slam_yaw
 
+def normalize_yaw(current_yaw, initial_yaw):
+    # Make yaw positive for clockwise rotation (left-to-right)
+    yaw = -(current_yaw - initial_yaw)
+
+    # Normalize to [-pi, pi]
+    yaw = (yaw + math.pi) % (2 * math.pi) - math.pi
+    return yaw
+
+def get_relative_yaw(orientation):
+    global initial_yaw
+
+    # Quaternion to Euler
+    q = [orientation.x, orientation.y, orientation.z, orientation.w]
+    roll, pitch, yaw = euler_from_quaternion(q)
+
+    # Set initial yaw once
+    if initial_yaw is None:
+        initial_yaw = yaw
+
+    # Get relative yaw: right turn = positive
+    relative_yaw = normalize_yaw(yaw, initial_yaw)
+    return relative_yaw
+
 def rotate_to_world(attitude):
     # Convert from body frame to NED/world frame
     cr = math.cos(attitude[0])
@@ -171,7 +194,8 @@ class SlamLocalization(Node):
         attitude = [roll, pitch, yaw]
         cam_x, cam_y, cam_z = position.z, -position.y, position.x  # Adjusted for downfacing camera
         cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
-        cam_roll, cam_pitch, cam_yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
+        cam_roll, cam_pitch, yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
+        cam_yaw = get_relative_yaw(orientation) #relative to body frame
         self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
         self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
         # gps_ned = get_local_position(self.vehicle)
