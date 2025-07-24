@@ -9,6 +9,7 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy
 import os
 import sys
 import csv
+import math
 
 os.environ["MAVLINK20"] = "1"
 
@@ -25,6 +26,30 @@ home_alt = 53
 #camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = slam_pitch, cam_yaw = slam_roll
 #camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z, cam_roll = slam_roll, cam_pitch = slam_pitch, cam_yaw = slam_yaw
 
+def rotate_to_world(attitude):
+    # Convert from body frame to NED/world frame
+    cr = math.cos(attitude[0])
+    sr = math.sin(attitude[0])
+    cp = math.cos(attitude[1])
+    sp = math.sin(attitude[1])
+    cy = math.cos(attitude[2])
+    sy = math.sin(attitude[2])
+
+    # Rotation matrix R_body_to_world
+    R = [
+        [cp * cy, sr * sp * cy - cr * sy, cr * sp * cy + sr * sy],
+        [cp * sy, sr * sp * sy + cr * cy, cr * sp * sy - sr * cy],
+        [-sp,     sr * cp,                cr * cp]
+    ]
+
+    # Convert attitude to world frame
+    return [
+        math.atan2(R[2][1], R[2][2]),  # Roll
+        math.asin(-R[2][0]),            # Pitch
+        math.atan2(R[1][0], R[0][0])    # Yaw
+    ]
+
+
 def get_local_position(vehicle):
     while True:
         msg = vehicle.recv_match(type='LOCAL_POSITION_NED', blocking=True)
@@ -36,6 +61,14 @@ def get_local_position(vehicle):
             vy = msg.vy
             vz = msg.vz
             return [pos_x,pos_y,pos_z,vx,vy,vz]
+    
+def set_parameter(vehicle, param_name, param_value, param_type=mavutil.mavlink.MAV_PARAM_TYPE_REAL32):
+    # Send PARAM_SET message to change the parameter
+    vehicle.mav.param_set_send(vehicle.target_system,
+                               vehicle.target_component,
+                               param_name.encode('utf-8'),
+                               param_value,
+                               param_type)
 
 def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
     x = 0
@@ -135,9 +168,10 @@ class SlamLocalization(Node):
         orientation = msg.pose.pose.orientation
         q = [orientation.x, orientation.y, orientation.z, orientation.w]
         roll, pitch, yaw = euler_from_quaternion(q)
+        attitude = [roll, pitch, yaw]
         cam_x, cam_y, cam_z = position.z, -position.y, position.x  # Adjusted for downfacing camera
         cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
-        cam_roll, cam_pitch, cam_yaw = yaw, pitch, roll  # Adjusted for downfacing camera
+        cam_roll, cam_pitch, cam_yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
         self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
         self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
         # gps_ned = get_local_position(self.vehicle)
