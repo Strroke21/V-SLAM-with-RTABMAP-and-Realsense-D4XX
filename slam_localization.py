@@ -22,9 +22,21 @@ start_time = time.time()
 home_lat = 19.1345054
 home_lon =  72.9120648
 home_alt = 53
+rng_alt = 0
 
 #camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = slam_pitch, cam_yaw = slam_roll
-#camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z, cam_roll = slam_roll, cam_pitch = slam_pitch, cam_yaw = slam_yaw
+#camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z
+
+def get_rangefinder_data(vehicle):
+    global rng_alt
+    # Wait for a DISTANCE_SENSOR or RANGEFINDER message
+    msg = vehicle.recv_match(type='DISTANCE_SENSOR', blocking=False)
+    if msg is not None:
+        dist = msg.current_distance # in meters
+        if dist is not None:
+            rng_alt = dist/100
+
+    return rng_alt
 
 def normalize_yaw(current_yaw, initial_yaw):
     # Make yaw positive for clockwise rotation (left-to-right)
@@ -192,7 +204,8 @@ class SlamLocalization(Node):
         q = [orientation.x, orientation.y, orientation.z, orientation.w]
         roll, pitch, yaw = euler_from_quaternion(q)
         attitude = [roll, pitch, yaw]
-        cam_x, cam_y, cam_z = position.z, -position.y, position.x  # Adjusted for downfacing camera
+        cam_x, cam_y, _ = position.z, -position.y, position.x  # Adjusted for downfacing camera
+        cam_z = -get_rangefinder_data(self.vehicle)  # Use rangefinder data for Z
         cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
         cam_roll, cam_pitch, yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
         cam_yaw = get_relative_yaw(orientation) #relative to body frame
@@ -219,7 +232,6 @@ class SlamLocalization(Node):
         self.csv_file.close()
         self.get_logger().info("CSV log file closed.")
         
-
 def main(args=None):
     rclpy.init(args=args)
     vehicle = connect(fcu_addr,baud=fcu_baud) 
