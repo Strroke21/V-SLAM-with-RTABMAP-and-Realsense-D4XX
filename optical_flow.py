@@ -91,13 +91,13 @@ class OpticalFlowNode(Node):
 
             # --- Transform raw pixel shift to drone body frame (dpix) ---
             # Camera X → Body Y, Camera Y → -Body X (down-facing camera)
-            flow_x = int(-fy)  # Forward (Body X)
-            flow_y = int(fx)  # Right   (Body Y)
+            flow_x = int(fy)  # Forward (Body X)
+            flow_y = int(-fx)  # Right   (Body Y)
 
             # --- Convert to meters/second (compensated) ---
             # Apply same transformation to metric flow
-            flow_comp_m_x = (-fy * self.ground_distance) / (self.focal_px * dt)  # Forward (Body X)
-            flow_comp_m_y = (fx * self.ground_distance) / (self.focal_px * dt)  # Right   (Body Y)
+            flow_comp_m_x = (fy * self.ground_distance) / (self.focal_px * dt)  # Forward (Body X)
+            flow_comp_m_y = (-fx * self.ground_distance) / (self.focal_px * dt)  # Right   (Body Y)
 
 
             magnitude = np.linalg.norm(flow, axis=2)
@@ -113,12 +113,12 @@ class OpticalFlowNode(Node):
 def main():
     vehicle = connect(fcu_addr)
     enable_data_stream(vehicle, 200)
-    set_parameter(vehicle, 'FLOW_TYPE', 5)  # mavlink
-    set_parameter(vehicle, 'EK3_SRC1_POSXY',0)  # none
-    set_parameter(vehicle, 'EK3_SRC1_VELXY', 5)  # optical flow
-    set_parameter(vehicle, 'EK3_SRC1_VELZ', 0)  # none
-    set_parameter(vehicle, 'EK3_SRC1_POSZ', 1)  #baro
-    set_parameter(vehicle, 'EK3_SRC1_YAW', 1)  #compass
+    # set_parameter(vehicle, 'FLOW_TYPE', 5)  # mavlink
+    # set_parameter(vehicle, 'EK3_SRC1_POSXY',0)  # none
+    # set_parameter(vehicle, 'EK3_SRC1_VELXY', 5)  # optical flow
+    # set_parameter(vehicle, 'EK3_SRC1_VELZ', 0)  # none
+    # set_parameter(vehicle, 'EK3_SRC1_POSZ', 1)  #baro
+    # set_parameter(vehicle, 'EK3_SRC1_YAW', 1)  #compass
     rclpy.init()
     node = OpticalFlowNode(vehicle)
     rclpy.spin(node)
