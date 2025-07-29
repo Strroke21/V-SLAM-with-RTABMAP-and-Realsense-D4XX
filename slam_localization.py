@@ -204,7 +204,7 @@ class SlamLocalization(Node):
         q = [orientation.x, orientation.y, orientation.z, orientation.w]
         roll, pitch, yaw = euler_from_quaternion(q)
         attitude = [roll, pitch, yaw]
-        cam_x, cam_y, _ = position.z, -position.y, -position.x  # Adjusted for downfacing camera
+        cam_x, cam_y, _ = position.z, -position.y, position.x  # Adjusted for downfacing camera
         cam_z = -get_rangefinder_data(self.vehicle)  # Use rangefinder data for Z
         cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
         cam_roll, cam_pitch, yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
