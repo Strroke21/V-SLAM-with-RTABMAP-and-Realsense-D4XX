@@ -111,7 +111,7 @@ private:
         float cam_yaw = roll;
         float cam_vx = lin.z;
         float cam_vy = -lin.y;
-        float cam_vz = -lin.x;
+        float cam_vz = lin.x;
 
         RCLCPP_INFO(get_logger(), "[SLAM] x: %.2f, y: %.2f, z: %.2f", cam_x, cam_y, cam_z);
         RCLCPP_INFO(get_logger(), "[Ori] roll: %.2f, pitch: %.2f, yaw: %.2f", roll, pitch, yaw);
