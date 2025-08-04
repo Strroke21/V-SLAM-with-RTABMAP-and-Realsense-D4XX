@@ -1,4 +1,4 @@
-# ROS 2 Humble Setup Guide (Ubuntu 22.04 LTS)
+## ROS 2 Humble Setup Guide (Ubuntu 22.04 LTS)
 
 ## I. ROS 2 Humble Setup or run
 
@@ -143,7 +143,7 @@ To make it persistent, add it to your `.bashrc`:
 echo "source ~/realsense_ws/install/setup.bash" >> ~/.bashrc
 ```
 
-### **4. Launch Camera Node**
+### **4. Launch Camera Node (downfacing)**
 
 To test the installation, launch the RealSense camera node:
 
