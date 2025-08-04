@@ -78,7 +78,7 @@ ros2 run demo_nodes_py talker
 ```
 
 Open another terminal and start a listener node:
-
+✅
 ```bash
 source /opt/ros/humble/setup.bash
 ros2 run demo_nodes_py listener
@@ -228,4 +228,6 @@ rtabmap ~/.ros/rtabmap.db
 
 ![alt text](images/ft1407.png)
 ![alt text](images/ft1707.png)
+![alt text](images/ft0208-1.png)
+![alt text](images/ft0208-2.png)
 
