@@ -200,7 +200,7 @@ EK3_SRC1_POSZ = 1 (Baro which is safer)
 
 EK3_SRC1_VELZ = 6 (you can set it to 6 if 1st flight test looks good)
 
-EK3_SRC1_YAW = 6 (ExternalNav)
+EK3_SRC1_YAW = 1 (Compass)
 
 
 ```
@@ -213,7 +213,7 @@ python3 slam_localization.py #up to date
 
 # for cpp run
 colcon build --packages-select slam_localization --symlink-install #once
-source install/setup.bash
+source install/setup.bash #once
 ros2 run slam_localization slam_node #updated
  
 ```
