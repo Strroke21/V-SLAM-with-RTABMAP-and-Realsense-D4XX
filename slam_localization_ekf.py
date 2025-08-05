@@ -249,7 +249,7 @@ class SlamLocalization(Node):
 
         self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
         self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
-        
+
         self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
         vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
         vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
@@ -269,9 +269,7 @@ class SlamLocalization(Node):
 
         data_hz_per_second = self.counter / (current_time - start_time)
         self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
-        self.csv_writer.writerow([
-            cam_x, cam_y, cam_z
-        ])
+        self.csv_writer.writerow([cam_x, cam_y, cam_z])
 
     def destroy_node(self):
         super().destroy_node()

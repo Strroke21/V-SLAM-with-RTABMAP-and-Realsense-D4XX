@@ -84,7 +84,6 @@ def rotate_to_world(attitude):
         math.atan2(R[1][0], R[0][0])    # Yaw
     ]
 
-
 def get_local_position(vehicle):
     while True:
         msg = vehicle.recv_match(type='LOCAL_POSITION_NED', blocking=True)
@@ -223,9 +222,7 @@ class SlamLocalization(Node):
         current_time = time.time()
         data_hz_per_second = self.counter / (current_time - start_time)
         self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
-        self.csv_writer.writerow([
-            cam_x, cam_y, cam_z
-        ])
+        self.csv_writer.writerow([cam_x, cam_y, cam_z])
 
     def destroy_node(self):
         super().destroy_node()
