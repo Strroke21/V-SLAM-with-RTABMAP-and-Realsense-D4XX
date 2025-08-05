@@ -231,3 +231,8 @@ rtabmap ~/.ros/rtabmap.db
 ![alt text](images/ft0208-1.png)
 ![alt text](images/ft0208-2.png)
 
+
+
+
+
+
