@@ -39,7 +39,7 @@ def kalman_filter(prev_state, prev_cov, x_imu, y_imu, x_cam, y_cam):
                   [0, 1, 0, 0]])  
     Q = np.eye(4) * 0.02 #process noise
     R_imu = np.eye(2) * 1.0  #IMU has more noise 
-    R_cam = np.eye(2) * 0.05 #camera noise
+    R_cam = np.eye(2) * 0.1 #camera noise
     #Predict step
     pred_state = np.dot(A, prev_state)
     pred_cov = np.dot(np.dot(A, prev_cov), A.T) + Q 
