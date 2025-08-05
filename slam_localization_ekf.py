@@ -19,7 +19,7 @@ jump_speed_threshold = 20 # in m/s
 fcu_addr = '/dev/ttyACM0'  
 fcu_baud = 115200
 start_time = time.time()
-home_lat = 19.1345054
+home_lat = 19.1345054 
 home_lon =  72.9120648
 home_alt = 53
 rng_alt = 0
@@ -342,7 +342,7 @@ class SlamLocalization(Node):
         curr_pos = [cam_x, cam_y, cam_z]
         curr_att = [cam_roll, cam_pitch, cam_yaw]
 
-        if self.prev_pos is not None and self.prev_q is not None:
+        if self.prev_pos is not None and self.prev_att is not None:
             dt_usec = int((current_time - self.prev_time) * 1e6)
             vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
 
