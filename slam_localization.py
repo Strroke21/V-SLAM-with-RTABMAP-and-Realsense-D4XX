@@ -98,11 +98,12 @@ def get_local_position(vehicle):
     
 def set_parameter(vehicle, param_name, param_value, param_type=mavutil.mavlink.MAV_PARAM_TYPE_REAL32):
     # Send PARAM_SET message to change the parameter
-    vehicle.mav.param_set_send(vehicle.target_system,
-                               vehicle.target_component,
-                               param_name.encode('utf-8'),
-                               param_value,
-                               param_type)
+    vehicle.mav.param_set_send(
+        vehicle.target_system,                               
+        vehicle.target_component,
+        param_name.encode('utf-8'),
+        param_value,
+        param_type)
 
 def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
     x = 0
