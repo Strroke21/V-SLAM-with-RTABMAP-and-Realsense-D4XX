@@ -320,11 +320,6 @@ class SlamLocalization(Node):
         cam_roll, cam_pitch, yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
         cam_yaw = get_relative_yaw(orientation) #relative to body frame
 
-        self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
-        self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
-
-        self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
-
         # Kalman filter update
         imu = self.vehicle.recv_match(type='SCALED_IMU2', blocking=True)
         att_vehicle = self.vehicle.recv_match(type='ATTITUDE', blocking=True)
@@ -352,6 +347,10 @@ class SlamLocalization(Node):
 
         data_hz_per_second = self.counter / (current_time - start_time)
         self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
+        self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
+        self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
+        self.get_logger().info(f'[Fused SLAM]: X: {x_fused}, Y: {y_fused}, Z: {cam_z}')
+        self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
         self.csv_writer.writerow([cam_x, cam_y, cam_z])
 
     def destroy_node(self):
