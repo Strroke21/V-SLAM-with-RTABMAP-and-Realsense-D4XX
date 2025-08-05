@@ -227,9 +227,7 @@ class SlamLocalization(Node):
         self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
         self.csv_file = open('slam_log.csv', mode='a', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow([
-            'SLAM_X', 'SLAM_Y', 'SLAM_Z'
-        ])
+        self.csv_writer.writerow(['SLAM_X', 'SLAM_Y', 'SLAM_Z'])
         self.prev_pos = None
         self.prev_att = None
         self.prev_time = None
