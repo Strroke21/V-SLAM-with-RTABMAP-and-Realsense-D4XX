@@ -215,7 +215,7 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
     msg = vehicle.mav.vision_position_delta_encode(
         int(time.time() * 1e6),  # time_usec
         dt_usec,                 # time_delta_usec
-        [math.radians(droll), math.radians(dpitch), math.radians(dyaw)],   # delta angles in radians
+        [droll, dpitch, dyaw],   # delta angles in radians
         [dx, dy, dz],            # delta position in meters
         int(confidence) # confidence in percentage
         )
