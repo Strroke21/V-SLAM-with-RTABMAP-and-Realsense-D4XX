@@ -210,14 +210,14 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
     dyaw = (dyaw + np.pi) % (2 * np.pi) - np.pi
     delta_magnitude = np.linalg.norm([dx,dy,dz])  # √(dx² + dy² + dz²)
     confidence = max(0.0, min(100.0, 100.0 - delta_magnitude * 100.0))
-    print(f"Confidence: {confidence:.2f}")
+    print(f"[Confidence]: {int(confidence)}")
     # Build and send the message
     msg = vehicle.mav.vision_position_delta_encode(
         int(time.time() * 1e6),  # time_usec
         dt_usec,                 # time_delta_usec
         [math.radians(droll), math.radians(dpitch), math.radians(dyaw)],   # delta angles in radians
         [dx, dy, dz],            # delta position in meters
-        confidence # confidence in percentage
+        int(confidence) # confidence in percentage
         )
     vehicle.mav.send(msg)
 
