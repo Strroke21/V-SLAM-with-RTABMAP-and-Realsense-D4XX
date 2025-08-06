@@ -23,82 +23,10 @@ home_lat = 19.1345054
 home_lon =  72.9120648
 home_alt = 53
 rng_alt = 0
-
-prev_state = np.array([[0],[0],[0],[0]]) #initialisation state
-prev_cov = np.eye(4)*0.025 #initial covariance
+initial_yaw = -3.14159
 
 #camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = slam_pitch, cam_yaw = slam_roll
 #camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z
-
-def kalman_filter(prev_state, prev_cov, x_imu, y_imu, x_cam, y_cam):
-
-    #state transition model (constant velocity assumed)
-    A=np.eye(4)
-    # Measurement model (Only measuring position)
-    H = np.array([[1, 0, 0, 0],  
-                  [0, 1, 0, 0]])  
-    Q = np.eye(4) * 0.02 #process noise
-    R_imu = np.eye(2) * 1.0  #IMU has more noise 
-    R_cam = np.eye(2) * 0.1 #camera noise
-    #Predict step
-    pred_state = np.dot(A, prev_state)
-    pred_cov = np.dot(np.dot(A, prev_cov), A.T) + Q 
-    # IMU update
-    z_imu = np.array([[x_imu], [y_imu]])  # Measurement
-    y_imu = z_imu - np.dot(H, pred_state)  # Residual
-    S_imu = np.dot(H, np.dot(pred_cov, H.T)) + R_imu  # Innovation covariance
-    K_imu = np.dot(np.dot(pred_cov, H.T), np.linalg.inv(S_imu))  # Kalman gain
-    updated_state = pred_state + np.dot(K_imu, y_imu)  # Updated state
-    updated_cov = np.dot((np.eye(4) - np.dot(K_imu, H)), pred_cov)  # Updated covariance
-        # Camera update
-    z_cam = np.array([[x_cam], [y_cam]])  
-    y_cam = z_cam - np.dot(H, updated_state)
-    S_cam = np.dot(H, np.dot(updated_cov, H.T)) + R_cam
-    K_cam = np.dot(np.dot(updated_cov, H.T), np.linalg.inv(S_cam))
-    updated_state = updated_state + np.dot(K_cam, y_cam)
-    updated_cov = np.dot((np.eye(4) - np.dot(K_cam, H)), updated_cov)
-
-    return updated_state, updated_cov
-
-def clamp_velocity(v, threshold=0.001):  # m/s
-    return 0 if abs(v) < threshold else v
-
-def calculate_position_from_imu(imu_obj, attitude):
-    global previous_time, vx, vy, x_total, y_total
-
-    if imu_obj is None or attitude is None:
-        return x_total, y_total, 0.0
-
-    current_time = imu_obj.time_boot_ms / 1000.0
-    if previous_time is None:
-        previous_time = current_time
-        return x_total, y_total, 0.0
-
-    dt = current_time - previous_time
-    previous_time = current_time
-
-    # Rotate + scale + gravity correct
-    ax_w, ay_w, az_w = rotate_to_world(imu_obj, attitude)
-
-    # Integrate acceleration → velocity
-    vx += ax_w * dt
-    vy += ay_w * dt
-
-    # Optional: decay and clamp
-    # vx *= 0.98
-    # vy *= 0.98
-    vx = clamp_velocity(vx)
-    vy = clamp_velocity(vy)
-    # Remove this, or:
-    vx = clamp_velocity(vx, 1e-6)
-    vy = clamp_velocity(vy, 1e-6)
-
-    # Integrate velocity → position
-    x_total += vx * dt
-    y_total += vy * dt
-
-    print(f"ax_world={ax_w:.3f}, ay_world={ay_w:.3f}, vx={vx:.3f}, vy={vy:.3f}, dt={dt:.4f}")
-    return x_total, y_total, dt
 
 def get_rangefinder_data(vehicle):
     global rng_alt
@@ -280,16 +208,18 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
     droll = (droll + np.pi) % (2 * np.pi) - np.pi
     dpitch = (dpitch + np.pi) % (2 * np.pi) - np.pi
     dyaw = (dyaw + np.pi) % (2 * np.pi) - np.pi
-
+    delta_magnitude = np.linalg.norm([dx,dy,dz])  # √(dx² + dy² + dz²)
+    confidence = max(0.0, min(100.0, 100.0 - delta_magnitude * 100.0))
+    print(f"Confidence: {confidence:.2f}")
     # Build and send the message
-    vehicle.mav.vision_position_delta_send(
+    msg = vehicle.mav.vision_position_delta_encode(
         int(time.time() * 1e6),  # time_usec
         dt_usec,                 # time_delta_usec
-        [dx, dy, dz],            # delta position
-        [droll, dpitch, dyaw],   # delta angles
-        [0.01] * 3,              # position_std_dev (optional)
-        [0.01] * 3               # angle_std_dev (optional)
-    )
+        [math.radians(droll), math.radians(dpitch), math.radians(dyaw)],   # delta angles in radians
+        [dx, dy, dz],            # delta position in meters
+        confidence # confidence in percentage
+        )
+    vehicle.mav.send(msg)
 
 class SlamLocalization(Node):
     def __init__(self, vehicle):
@@ -306,6 +236,8 @@ class SlamLocalization(Node):
         self.prev_pos = None
         self.prev_att = None
         self.prev_time = None
+        self.prev_state = np.array([[0],[0],[0],[0]]) #initialisation state
+        self.prev_cov = np.eye(4)*0.025 #initial covariance
 
     def odom_callback(self, msg):
         linear_vel = msg.twist.twist.linear
@@ -320,21 +252,12 @@ class SlamLocalization(Node):
         cam_roll, cam_pitch, yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
         cam_yaw = get_relative_yaw(orientation) #relative to body frame
 
-        # Kalman filter update
-        imu = self.vehicle.recv_match(type='SCALED_IMU2', blocking=True)
-        att_vehicle = self.vehicle.recv_match(type='ATTITUDE', blocking=True)
-        x_imu, y_imu, dt = calculate_position_from_imu(imu, att_vehicle)
-        updated_state, updated_cov = kalman_filter(prev_state, prev_cov, x_imu, y_imu, cam_x, cam_y)
-        x_fused, y_fused = updated_state[0][0], updated_state[1][0]
-        prev_cov = updated_cov
-        prev_state = updated_state
-
-        vision_position_send(self.vehicle, x_fused, y_fused, cam_z, cam_roll, cam_pitch, cam_yaw)
+        vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
         vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
 
         self.counter += 1
         current_time = time.time()
-        curr_pos = [x_fused, y_fused, cam_z]
+        curr_pos = [cam_x, cam_y, cam_z]
         curr_att = [cam_roll, cam_pitch, cam_yaw]
 
         if self.prev_pos is not None and self.prev_att is not None:
@@ -349,9 +272,8 @@ class SlamLocalization(Node):
         self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
         self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
         self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
-        self.get_logger().info(f'[Fused SLAM]: X: {x_fused}, Y: {y_fused}, Z: {cam_z}')
         self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
-        self.csv_writer.writerow([cam_x, cam_y, cam_z, x_fused, y_fused, cam_z])
+        self.csv_writer.writerow([cam_x, cam_y, cam_z])
 
     def destroy_node(self):
         super().destroy_node()
