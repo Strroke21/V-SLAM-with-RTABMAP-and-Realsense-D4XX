@@ -43,7 +43,7 @@ def kalman_filter(prev_state, prev_cov, x_imu, y_imu, x_cam, y_cam):
     #Predict step
     pred_state = np.dot(A, prev_state)
     pred_cov = np.dot(np.dot(A, prev_cov), A.T) + Q 
-    # GPS update
+    # IMU update
     z_imu = np.array([[x_imu], [y_imu]])  # Measurement
     y_imu = z_imu - np.dot(H, pred_state)  # Residual
     S_imu = np.dot(H, np.dot(pred_cov, H.T)) + R_imu  # Innovation covariance
@@ -302,7 +302,7 @@ class SlamLocalization(Node):
         self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
         self.csv_file = open('slam_log.csv', mode='a', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['SLAM_X', 'SLAM_Y', 'SLAM_Z'])
+        self.csv_writer.writerow(['SLAM_X', 'SLAM_Y', 'SLAM_Z', 'FUSED_X', 'FUSED_Y', 'FUSED_Z'])
         self.prev_pos = None
         self.prev_att = None
         self.prev_time = None
@@ -334,7 +334,7 @@ class SlamLocalization(Node):
 
         self.counter += 1
         current_time = time.time()
-        curr_pos = [cam_x, cam_y, cam_z]
+        curr_pos = [x_fused, y_fused, cam_z]
         curr_att = [cam_roll, cam_pitch, cam_yaw]
 
         if self.prev_pos is not None and self.prev_att is not None:
@@ -351,7 +351,7 @@ class SlamLocalization(Node):
         self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
         self.get_logger().info(f'[Fused SLAM]: X: {x_fused}, Y: {y_fused}, Z: {cam_z}')
         self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
-        self.csv_writer.writerow([cam_x, cam_y, cam_z])
+        self.csv_writer.writerow([cam_x, cam_y, cam_z, x_fused, y_fused, cam_z])
 
     def destroy_node(self):
         super().destroy_node()
