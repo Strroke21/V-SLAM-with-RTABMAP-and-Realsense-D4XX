@@ -270,9 +270,9 @@ class SlamLocalization(Node):
 
         data_hz_per_second = self.counter / (current_time - start_time)
         self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
-        self.get_logger().info(f'[Orientation]: roll: {cam_roll}, pitch: {cam_pitch}, yaw: {cam_yaw}')
-        self.get_logger().info(f'[SLAM]: X: {cam_x}, Y: {cam_y}, Z: {cam_z}')  
-        self.get_logger().info(f'[Linear Velocity]: x: {cam_vx}, y: {cam_vy}, z: {cam_vz}')
+        self.get_logger().info(f'[Orientation]: roll: {cam_roll:.2f}, pitch: {cam_pitch:.2f}, yaw: {cam_yaw:.2f}')
+        self.get_logger().info(f'[SLAM]: X: {cam_x:.2f}, Y: {cam_y:.2f}, Z: {cam_z:.2f}')  
+        self.get_logger().info(f'[Linear Velocity]: x: {cam_vx:.2f}, y: {cam_vy:.2f}, z: {cam_vz:.2f}')
         self.csv_writer.writerow([cam_x, cam_y, cam_z])
 
     def destroy_node(self):
