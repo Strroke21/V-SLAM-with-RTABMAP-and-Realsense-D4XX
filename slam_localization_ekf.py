@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import rclpy
 from rclpy.node import Node
 import time
@@ -14,9 +16,9 @@ import math
 os.environ["MAVLINK20"] = "1"
 
 reset_counter = 1
-jump_threshold = 0.1 # in meters, from trials and errors
-jump_speed_threshold = 20 # in m/s
-fcu_addr = '/dev/ttyACM0'  
+jump_threshold = 2 # in meters, from trials and errors
+jump_speed_threshold = 30 # in m/s
+fcu_addr = 'tcp:127.0.0.1:5763' #'/dev/ttyACM0'  
 fcu_baud = 115200
 start_time = time.time()
 home_lat = 19.1345054 
@@ -24,6 +26,7 @@ home_lon =  72.9120648
 home_alt = 53
 rng_alt = 0
 initial_yaw = -3.14159
+
 
 #camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = slam_pitch, cam_yaw = slam_roll
 #camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z
@@ -219,25 +222,22 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
         [dx, dy, dz],            # delta position in meters
         int(confidence) # confidence in percentage
         )
-    vehicle.mav.send(msg)
+    vehicle.mav.send(msg) #delta position and orientation update
 
 class SlamLocalization(Node):
     def __init__(self, vehicle):
         super().__init__('localization')
-        self.vehicle = vehicle
-        self.prev_position = None
-        self.prev_vel = None
-        self.counter = 0
         qos = QoSProfile(depth=0, reliability=ReliabilityPolicy.BEST_EFFORT)
         self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
         self.csv_file = open('slam_log.csv', mode='a', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['SLAM_X', 'SLAM_Y', 'SLAM_Z', 'FUSED_X', 'FUSED_Y', 'FUSED_Z'])
+        self.csv_writer.writerow(['SLAM_X', 'SLAM_Y', 'SLAM_Z'])
+        self.vehicle = vehicle
+        self.counter = 0
         self.prev_pos = None
         self.prev_att = None
         self.prev_time = None
-        self.prev_state = np.array([[0],[0],[0],[0]]) #initialisation state
-        self.prev_cov = np.eye(4)*0.025 #initial covariance
+        self.prev_vel = None
 
     def odom_callback(self, msg):
         linear_vel = msg.twist.twist.linear
@@ -259,14 +259,32 @@ class SlamLocalization(Node):
         current_time = time.time()
         curr_pos = [cam_x, cam_y, cam_z]
         curr_att = [cam_roll, cam_pitch, cam_yaw]
+        curr_vel = [cam_vx, cam_vy, cam_vz]
 
         if self.prev_pos is not None and self.prev_att is not None:
             dt_usec = int((current_time - self.prev_time) * 1e6)
             vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
 
+            delta_position = [curr_pos[0] - self.prev_pos[0], curr_pos[1] - self.prev_pos[1], curr_pos[2] - self.prev_pos[2]]
+            delta_velocity = [curr_vel[0] - self.prev_vel[0], curr_vel[1] - self.prev_vel[1], curr_vel[2] - self.prev_vel[2]]
+            position_displacement = np.linalg.norm(delta_position)
+            delta_speed = np.linalg.norm(delta_velocity)
+            self.get_logger().info(f'[Position Displacement]: {position_displacement:.2f} m, [Speed Delta]: {delta_speed:.2f} m/s')
+
+            if position_displacement > jump_threshold or delta_speed > jump_speed_threshold:
+
+                if position_displacement > jump_threshold:
+                    self.get_logger().warn(f'Position jump detected: {position_displacement:.2f} m')
+                
+                elif delta_speed > jump_speed_threshold:
+                    self.get_logger().warn(f'Speed jump detected: {delta_speed:.2f} m/s')
+
+                increment_reset_counter()
+                
         self.prev_pos = curr_pos
         self.prev_att = curr_att
         self.prev_time = current_time
+        self.prev_vel = curr_vel
 
         data_hz_per_second = self.counter / (current_time - start_time)
         self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
