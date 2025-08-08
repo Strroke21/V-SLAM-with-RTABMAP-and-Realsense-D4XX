@@ -172,11 +172,6 @@ def enable_data_stream(vehicle,stream_rate):
     mavutil.mavlink.MAV_DATA_STREAM_ALL,
     stream_rate,1)
 
-def forward_telemetry(vehicle, gcs_addr):
-    gcs = mavutil.mavlink_connection(gcs_addr)
-    msg = vehicle.recv_match(blocking=True)
-    gcs.mav.send(msg)
-
 def increment_reset_counter():
     global reset_counter
     if reset_counter >= 255:
