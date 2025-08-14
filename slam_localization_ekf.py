@@ -28,7 +28,7 @@ rng_alt = 0
 initial_yaw = -3.14159
 
 
-#camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x, cam_roll = slam_yaw, cam_pitch = slam_pitch, cam_yaw = slam_roll
+#camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x
 #camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z
 
 def get_rangefinder_data(vehicle):
