@@ -208,8 +208,11 @@ EK3_SRC1_YAW = 1 (Compass)
 ### **4. Run Slam node (ardupilot)**
 
 ```bash
-#for python
+# (downfacing camera)
 python3 slam_localization.py #up to date
+
+# for forward facing camera
+python3 slam_localization_frd.py 
 
 # for cpp run
 colcon build --packages-select slam_localization --symlink-install #once
@@ -230,8 +233,6 @@ rtabmap ~/.ros/rtabmap.db
 ![alt text](images/ft1707.png)
 ![alt text](images/ft0208-1.png)
 ![alt text](images/ft0208-2.png)
-
-
 
 
 
