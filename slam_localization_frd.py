@@ -16,6 +16,9 @@ start_time = time.time()
 rng_alt = 0
 initial_roll = -3.14159  
 conn_string = 'tcp:127.0.0.1:5763'
+home_lat = 19.1345054 
+home_lon =  72.9120648
+home_alt = 53
 
 def normalize_roll(current_roll, initial_roll):
     # Make yaw positive for clockwise rotation (left-to-right)
@@ -218,6 +221,7 @@ def main(args=None):
     rclpy.init(args=args)
     vehicle = connect(conn_string,baud=115200)
     enable_data_stream(vehicle, 200)
+    set_default_home_position(vehicle, home_lat, home_lon, home_alt)
     time.sleep(1)  
     localization = SlamLocalization(vehicle)
     rclpy.spin(localization)
