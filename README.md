@@ -148,12 +148,7 @@ echo "source ~/realsense_ws/install/setup.bash" >> ~/.bashrc
 To test the installation, launch the RealSense camera node:
 
 ```bash
-ros2 launch realsense2_camera rs_launch.py \
-  enable_depth:=true \
-  enable_color:=true \
-  enable_sync:=true \
-  depth_module.depth_profile:=640,480,60 \
-  rgb_camera.color_profile:=640,480,60 
+ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=true   enable_sync:=true   depth_module.depth_profile:=640,480,60   rgb_camera.color_profile:=640,480,60 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200
 
 ```
 
@@ -180,7 +175,8 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
   rviz:=false \
   queue_size:=100 
   wait_for_transform:=true \
-  transform_timeout:=2.0
+  transform_timeout:=2.0 \
+  imu_topic:=/camera/camera/imu
 ```
 
 ### **3. Ardupilot Parameter setup (Camera Downfacing)**
