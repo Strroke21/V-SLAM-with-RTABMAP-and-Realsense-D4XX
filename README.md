@@ -160,26 +160,21 @@ ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=
 sudo apt install -y ros-humble-rtabmap-ros
 ```
 
-### **2. Launch RTAB-Map**
+### **2. Launch IMU node:
 
 ```bash
-ros2 launch rtabmap_launch rtabmap.launch.py \
-  rtabmap_args:="--delete_db_on_start" \
-  rgb_topic:=/camera/camera/color/image_raw \
-  depth_topic:=/camera/camera/depth/image_rect_raw \
-  camera_info_topic:=/camera/camera/color/camera_info \
-  frame_id:=camera_link \
-  use_sim_time:=true \
-  approx_sync:=true \
-  qos:=2 \
-  rviz:=false \
-  queue_size:=100 
-  wait_for_transform:=true \
-  transform_timeout:=2.0 \
-  imu_topic:=/camera/camera/imu
+ros2 run imu_filter_madgwick imu_filter_madgwick_node   --ros-args   -r imu/data_raw:=/camera/camera/imu   -r imu/data:=/imu/data   -p use_mag:=false
 ```
 
-### **3. Ardupilot Parameter setup (Camera Downfacing)**
+### **3. Launch RTAB-Map**
+
+```bash
+ros2 launch rtabmap_launch rtabmap.launch.py   rtabmap_args:="--delete_db_on_start"   rgb_topic:=/camera/camera/color/image_raw   depth_topic:=/camera/camera/depth/image_rect_raw   camera_info_topic:=/camera/camera/color/camera_info   frame_id:=camera_link   use_sim_time:=true   approx_sync:=true   qos:=2   rviz:=false   queue_size:=100 imu_topic:=/imu/data
+
+```
+
+
+### **4. Ardupilot Parameter setup (Camera Downfacing)**
 
 ```bash
 SERIAL1_PROTOCOL = 2 (MAVLink2).
@@ -201,7 +196,7 @@ EK3_SRC1_YAW = 1 (Compass)
 
 ```
 
-### **4. Run Slam node (ardupilot)**
+### **5. Run Slam node (ardupilot)**
 
 ```bash
 # (downfacing camera)
@@ -217,13 +212,13 @@ ros2 run slam_localization slam_node #updated
  
 ```
 
-### 5. To see Saved maps Run
+### 6. To see Saved maps Run
 
 ```bash
 rtabmap ~/.ros/rtabmap.db
 ```
 
-### 6. Flight Tests with RTABMAP SLAM
+### 7. Flight Tests with RTABMAP SLAM
 
 ![alt text](images/ft1407.png)
 ![alt text](images/ft1707.png)
