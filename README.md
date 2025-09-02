@@ -160,7 +160,7 @@ ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=
 sudo apt install -y ros-humble-rtabmap-ros
 ```
 
-### **2. Launch IMU node:
+### 2. Launch IMU node:
 
 ```bash
 ros2 run imu_filter_madgwick imu_filter_madgwick_node   --ros-args   -r imu/data_raw:=/camera/camera/imu   -r imu/data:=/imu/data   -p use_mag:=false
