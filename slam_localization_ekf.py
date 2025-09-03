@@ -10,7 +10,6 @@ from nav_msgs.msg import Odometry
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 import os
 import sys
-import csv
 import math
 
 os.environ["MAVLINK20"] = "1"
@@ -223,9 +222,6 @@ class SlamLocalization(Node):
         super().__init__('localization')
         qos = QoSProfile(depth=0, reliability=ReliabilityPolicy.BEST_EFFORT)
         self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
-        self.csv_file = open('slam_log.csv', mode='a', newline='')
-        self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['SLAM_X', 'SLAM_Y', 'SLAM_Z'])
         self.vehicle = vehicle
         self.counter = 0
         self.prev_pos = None
@@ -285,12 +281,7 @@ class SlamLocalization(Node):
         self.get_logger().info(f'[Orientation]: roll: {cam_roll:.2f}, pitch: {cam_pitch:.2f}, yaw: {cam_yaw:.2f}')
         self.get_logger().info(f'[SLAM]: X: {cam_x:.2f}, Y: {cam_y:.2f}, Z: {cam_z:.2f}')  
         self.get_logger().info(f'[Linear Velocity]: x: {cam_vx:.2f}, y: {cam_vy:.2f}, z: {cam_vz:.2f}')
-        self.csv_writer.writerow([cam_x, cam_y, cam_z])
 
-    def destroy_node(self):
-        super().destroy_node()
-        self.csv_file.close()
-        self.get_logger().info("CSV log file closed.")
         
 def main(args=None):
     rclpy.init(args=args)
