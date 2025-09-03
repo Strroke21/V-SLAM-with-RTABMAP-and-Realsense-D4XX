@@ -135,7 +135,7 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
     dpitch = (dpitch + np.pi) % (2 * np.pi) - np.pi
     dyaw = (dyaw + np.pi) % (2 * np.pi) - np.pi
     delta_magnitude = np.linalg.norm([dx,dy,dz])  # √(dx² + dy² + dz²)
-    confidence = max(0.0, min(100.0, 100.0 - delta_magnitude * 100.0))
+    confidence = max(0.0, min(90.0, 90.0 - delta_magnitude * 90.0)) #confidence scaled to 90%
     print(f"[Confidence]: {int(confidence)}")
     msg = vehicle.mav.vision_position_delta_encode(
         int(time.time() * 1e6),  # time_usec
@@ -145,6 +145,17 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
         int(confidence) # confidence in percentage
         )
     vehicle.mav.send(msg) #delta position and orientation update
+
+def get_rangefinder_data(vehicle):
+    global rng_alt
+    # Wait for a DISTANCE_SENSOR or RANGEFINDER message
+    msg = vehicle.recv_match(type='DISTANCE_SENSOR', blocking=False)
+    if msg is not None:
+        dist = msg.current_distance # in meters
+        if dist is not None:
+            rng_alt = dist/100
+
+    return rng_alt
 
 class SlamLocalization(Node):
     def __init__(self,vehicle):
@@ -167,7 +178,8 @@ class SlamLocalization(Node):
         orientation = msg.pose.pose.orientation
         q = [orientation.x, orientation.y, orientation.z, orientation.w]
         attitude = euler_from_quaternion(q)
-        cam_x, cam_y, cam_z = position.x, -position.y, -position.z # Adjusted for forward facing camera
+        cam_x, cam_y = position.x, -position.y
+        cam_z = -get_rangefinder_data(self.vehicle) # Adjusted for forward facing camera
         cam_vx, cam_vy, cam_vz = linear_vel.x, -linear_vel.y, -linear_vel.z  # Adjusted for forward facing camera
         roll = attitude[2]  
         cam_roll = get_relative_roll(roll)

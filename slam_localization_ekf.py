@@ -27,7 +27,6 @@ home_alt = 53
 rng_alt = 0
 initial_yaw = -3.14159
 
-
 #camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x
 #camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z
 
@@ -207,7 +206,7 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
     dpitch = (dpitch + np.pi) % (2 * np.pi) - np.pi
     dyaw = (dyaw + np.pi) % (2 * np.pi) - np.pi
     delta_magnitude = np.linalg.norm([dx,dy,dz])  # √(dx² + dy² + dz²)
-    confidence = max(0.0, min(100.0, 100.0 - delta_magnitude * 100.0))
+    confidence = max(0.0, min(90.0, 90.0 - delta_magnitude * 90.0)) #confidence scaled to 90%
     print(f"[Confidence]: {int(confidence)}")
     # Build and send the message
     msg = vehicle.mav.vision_position_delta_encode(
