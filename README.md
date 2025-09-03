@@ -192,7 +192,7 @@ EK3_SRC1_YAW = 1 (Compass)
 ### **5. Run Slam node (ardupilot)**
 
 ```bash
-# (downfacing camera)
+# (downfacing camera) #need rangefinder for better position hold
 python3 slam_localization.py #up to date
 
 # for forward facing camera
