@@ -106,14 +106,7 @@ sudo make install
 
 ## III. Camera Node Setup
 
-### **1. Create a Workspace**
-
-```bash
-mkdir -p ~/realsense_ws/src
-cd ~/realsense_ws/src
-```
-
-### **2. Clone the `realsense_ros` Repository**
+### **1. Clone the `realsense_ros` Repository**
 
 ```bash
 git clone https://github.com/IntelRealSense/realsense-ros.git
@@ -124,7 +117,7 @@ echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### **3. Build the Workspace**
+### **2. Build the Workspace**
 
 ```bash
 cd ~/realsense-ros
@@ -143,7 +136,7 @@ To make it persistent, add it to your `.bashrc`:
 echo "source ~/realsense-ros/install/setup.bash" >> ~/.bashrc
 ```
 
-### **4. Launch Camera Node (downfacing)**
+### **3. Launch Camera Node (downfacing)**
 
 To test the installation, launch the RealSense camera node:
 
