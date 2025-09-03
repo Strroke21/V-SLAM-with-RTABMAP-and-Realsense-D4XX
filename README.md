@@ -127,20 +127,20 @@ source ~/.bashrc
 ### **3. Build the Workspace**
 
 ```bash
-cd ~/realsense_ws
+cd ~/realsense-ros
 colcon build --symlink-install
 ```
 
 Source the newly built workspace:
 
 ```bash
-source ~/realsense_ws/install/setup.bash
+source ~/realsense-ros/install/setup.bash
 ```
 
 To make it persistent, add it to your `.bashrc`:
 
 ```bash
-echo "source ~/realsense_ws/install/setup.bash" >> ~/.bashrc
+echo "source ~/realsense-ros/install/setup.bash" >> ~/.bashrc
 ```
 
 ### **4. Launch Camera Node (downfacing)**
