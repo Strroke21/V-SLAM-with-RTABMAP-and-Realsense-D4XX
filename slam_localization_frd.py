@@ -197,7 +197,7 @@ class SlamLocalization(Node):
 
         if self.prev_pos is not None and self.prev_att is not None:
             dt_usec = int((current_time - self.prev_time) * 1e6)
-            vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
+            # vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
 
             delta_position = [curr_pos[0] - self.prev_pos[0], curr_pos[1] - self.prev_pos[1], curr_pos[2] - self.prev_pos[2]]
             delta_velocity = [curr_vel[0] - self.prev_vel[0], curr_vel[1] - self.prev_vel[1], curr_vel[2] - self.prev_vel[2]]
