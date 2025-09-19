@@ -212,7 +212,7 @@ rtabmap ~/.ros/rtabmap.db
 ```
 
 
-## II. Stereo Slam with RTABMAP
+## IV. Stereo Slam with RTABMAP
 
 ### 1. Stereo SLAM 
  #### 1. Launch camera with infra1 (left)  and infra2(right) 
