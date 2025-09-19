@@ -211,12 +211,6 @@ ros2 run slam_localization slam_node #updated
 rtabmap ~/.ros/rtabmap.db
 ```
 
-### 7. Flight Tests with RTABMAP SLAM
-
-![alt text](images/ft1407.png)
-![alt text](images/ft1707.png)
-![alt text](images/ft0208-1.png)
-![alt text](images/ft0208-2.png)
 
 ## II. Stereo Slam with RTABMAP
 
@@ -257,8 +251,12 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
 
 ```
 
+### Flight Tests with RTABMAP SLAM
 
-
+![alt text](images/ft1407.png)
+![alt text](images/ft1707.png)
+![alt text](images/ft0208-1.png)
+![alt text](images/ft0208-2.png)
 
 
 
