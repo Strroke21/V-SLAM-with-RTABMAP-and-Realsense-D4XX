@@ -193,7 +193,7 @@ EK3_SRC1_YAW = 1 (Compass)
 
 ```bash
 # (downfacing camera) #need rangefinder for better position hold
-python3 slam_localization.py #up to date
+python3 slam_localization_ekf.py #up to date
 
 # for forward facing camera
 python3 slam_localization_frd.py 
