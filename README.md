@@ -218,6 +218,45 @@ rtabmap ~/.ros/rtabmap.db
 ![alt text](images/ft0208-1.png)
 ![alt text](images/ft0208-2.png)
 
+## II. Stereo Slam with RTABMAP
+
+### 1. Stereo SLAM 
+ #### 1. Launch camera with infra1 (left)  and infra2(right) 
+
+```bash
+
+ros2 launch realsense2_camera rs_launch.py enable_infra1:=true enable_infra2:=true  enable_color:=true   enable_sync:=true  rgb_camera.color_profile:=848,480,30 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200
+
+```
+
+#### 2. Launch IMU Node :
+
+```bash
+ros2 run imu_filter_madgwick imu_filter_madgwick_node   --ros-args   -r imu/data_raw:=/camera/camera/imu   -r imu/data:=/imu/data   -p use_mag:=false
+```
+
+#### 3. Launch RTABMAP for stereo 
+
+```bash
+
+ros2 launch rtabmap_launch rtabmap.launch.py \
+   rtabmap_args:="--delete_db_on_start" \
+   stereo:=true \
+   stereo_namespace:=/camera/camera \
+   left_image_topic:=/camera/camera/infra1/image_rect_raw \
+   right_image_topic:=/camera/camera/infra2/image_rect_raw \
+   left_camera_info_topic:=/camera/camera/infra1/camera_info \
+   right_camera_info_topic:=/camera/camera/infra2/camera_info \
+   frame_id:=camera_link \
+   use_sim_time:=true \
+   approx_sync:=true \
+   qos:=2 \
+   rviz:=false \
+   queue_size:=100 \
+   imu_topic:=/imu/data
+
+```
+
 
 
 
