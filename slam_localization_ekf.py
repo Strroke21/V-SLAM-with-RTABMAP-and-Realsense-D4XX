@@ -228,59 +228,66 @@ class SlamLocalization(Node):
         self.prev_att = None
         self.prev_time = None
         self.prev_vel = None
+        self.last_msg = None
+        self.create_timer(0.01, self.timer_callback)  # 100 Hz
 
     def odom_callback(self, msg):
-        linear_vel = msg.twist.twist.linear
-        position = msg.pose.pose.position
-        orientation = msg.pose.pose.orientation
-        q = [orientation.x, orientation.y, orientation.z, orientation.w]
-        roll, pitch, yaw = euler_from_quaternion(q)
-        attitude = [roll, pitch, yaw]
-        cam_x, cam_y, _ = position.z, -position.y, position.x  # Adjusted for downfacing camera
-        cam_z = -get_rangefinder_data(self.vehicle)  # Use rangefinder data for Z
-        cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
-        cam_roll, cam_pitch, yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
-        cam_yaw = get_relative_yaw(orientation) #relative to body frame
+        self.last_msg = msg
 
-        vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
-        vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
+    def timer_callback(self):
+        if self.last_msg:
+            msg = self.last_msg
+            linear_vel = msg.twist.twist.linear
+            position = msg.pose.pose.position
+            orientation = msg.pose.pose.orientation
+            q = [orientation.x, orientation.y, orientation.z, orientation.w]
+            roll, pitch, yaw = euler_from_quaternion(q)
+            attitude = [roll, pitch, yaw]
+            cam_x, cam_y, _ = position.z, -position.y, position.x  # Adjusted for downfacing camera
+            cam_z = -get_rangefinder_data(self.vehicle)  # Use rangefinder data for Z
+            cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
+            cam_roll, cam_pitch, yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
+            cam_yaw = get_relative_yaw(orientation) #relative to body frame
 
-        self.counter += 1
-        current_time = time.time()
-        curr_pos = [cam_x, cam_y, cam_z]
-        curr_att = [cam_roll, cam_pitch, cam_yaw]
-        curr_vel = [cam_vx, cam_vy, cam_vz]
+            vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
+            vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
 
-        if self.prev_pos is not None and self.prev_att is not None:
-            dt_usec = int((current_time - self.prev_time) * 1e6)
-            # vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
+            self.counter += 1
+            current_time = time.time()
+            curr_pos = [cam_x, cam_y, cam_z]
+            curr_att = [cam_roll, cam_pitch, cam_yaw]
+            curr_vel = [cam_vx, cam_vy, cam_vz]
 
-            delta_position = [curr_pos[0] - self.prev_pos[0], curr_pos[1] - self.prev_pos[1], curr_pos[2] - self.prev_pos[2]]
-            delta_velocity = [curr_vel[0] - self.prev_vel[0], curr_vel[1] - self.prev_vel[1], curr_vel[2] - self.prev_vel[2]]
-            position_displacement = np.linalg.norm(delta_position)
-            delta_speed = np.linalg.norm(delta_velocity)
-            self.get_logger().info(f'[Position Displacement]: {position_displacement:.2f} m, [Speed Delta]: {delta_speed:.2f} m/s')
+            if self.prev_pos is not None and self.prev_att is not None:
+                dt_usec = int((current_time - self.prev_time) * 1e6)
+                # vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
 
-            if position_displacement > jump_threshold or delta_speed > jump_speed_threshold:
+                delta_position = [curr_pos[0] - self.prev_pos[0], curr_pos[1] - self.prev_pos[1], curr_pos[2] - self.prev_pos[2]]
+                delta_velocity = [curr_vel[0] - self.prev_vel[0], curr_vel[1] - self.prev_vel[1], curr_vel[2] - self.prev_vel[2]]
+                position_displacement = np.linalg.norm(delta_position)
+                delta_speed = np.linalg.norm(delta_velocity)
+                self.get_logger().info(f'[Position Displacement]: {position_displacement:.2f} m, [Speed Delta]: {delta_speed:.2f} m/s')
 
-                if position_displacement > jump_threshold:
-                    self.get_logger().warn(f'Position jump detected: {position_displacement:.2f} m')
-                
-                elif delta_speed > jump_speed_threshold:
-                    self.get_logger().warn(f'Speed jump detected: {delta_speed:.2f} m/s')
+                if position_displacement > jump_threshold or delta_speed > jump_speed_threshold:
 
-                increment_reset_counter()
-                
-        self.prev_pos = curr_pos
-        self.prev_att = curr_att
-        self.prev_time = current_time
-        self.prev_vel = curr_vel
+                    if position_displacement > jump_threshold:
+                        self.get_logger().warn(f'Position jump detected: {position_displacement:.2f} m')
+                    
+                    elif delta_speed > jump_speed_threshold:
+                        self.get_logger().warn(f'Speed jump detected: {delta_speed:.2f} m/s')
 
-        data_hz_per_second = self.counter / (current_time - start_time)
-        self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
-        self.get_logger().info(f'[Orientation]: roll: {cam_roll:.2f}, pitch: {cam_pitch:.2f}, yaw: {cam_yaw:.2f}')
-        self.get_logger().info(f'[SLAM]: X: {cam_x:.2f}, Y: {cam_y:.2f}, Z: {cam_z:.2f}')  
-        self.get_logger().info(f'[Linear Velocity]: x: {cam_vx:.2f}, y: {cam_vy:.2f}, z: {cam_vz:.2f}')
+                    increment_reset_counter()
+                    
+            self.prev_pos = curr_pos
+            self.prev_att = curr_att
+            self.prev_time = current_time
+            self.prev_vel = curr_vel
+
+            data_hz_per_second = self.counter / (current_time - start_time)
+            self.get_logger().info(f'Sending to FCU {data_hz_per_second:.2f} Hz')
+            self.get_logger().info(f'[Orientation]: roll: {cam_roll:.2f}, pitch: {cam_pitch:.2f}, yaw: {cam_yaw:.2f}')
+            self.get_logger().info(f'[SLAM]: X: {cam_x:.2f}, Y: {cam_y:.2f}, Z: {cam_z:.2f}')  
+            self.get_logger().info(f'[Linear Velocity]: x: {cam_vx:.2f}, y: {cam_vy:.2f}, z: {cam_vz:.2f}')
 
         
 def main(args=None):
