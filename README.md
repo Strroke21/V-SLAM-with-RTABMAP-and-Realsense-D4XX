@@ -236,7 +236,6 @@ ros2 run imu_filter_madgwick imu_filter_madgwick_node   --ros-args   -r imu/data
 ros2 launch rtabmap_launch rtabmap.launch.py \
    rtabmap_args:="--delete_db_on_start" \
    stereo:=true \
-   stereo_namespace:=/camera/camera \
    left_image_topic:=/camera/camera/infra1/image_rect_raw \
    right_image_topic:=/camera/camera/infra2/image_rect_raw \
    left_camera_info_topic:=/camera/camera/infra1/camera_info \
