@@ -111,18 +111,10 @@ sudo make install
 ```bash
 git clone https://github.com/IntelRealSense/realsense-ros.git
 cd realsense-ros
-
-source /opt/ros/humble/setup.bash
-echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
-source ~/.bashrc
-```
-
-### **2. Build the Workspace**
-
-```bash
-cd ~/realsense-ros
 colcon build --symlink-install
 ```
+
+### **2. Source the Workspace**
 
 Source the newly built workspace:
 
