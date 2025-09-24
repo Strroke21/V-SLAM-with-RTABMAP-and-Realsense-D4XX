@@ -133,7 +133,7 @@ echo "source ~/realsense-ros/install/setup.bash" >> ~/.bashrc
 To test the installation, launch the RealSense camera node:
 
 ```bash
-ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=true   enable_sync:=true   depth_module.depth_profile:=640,480,60   rgb_camera.color_profile:=640,480,60 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200
+ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=true   enable_sync:=true   depth_module.depth_profile:=848,480,90   rgb_camera.color_profile:=848,480,60 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200
 
 ```
 
