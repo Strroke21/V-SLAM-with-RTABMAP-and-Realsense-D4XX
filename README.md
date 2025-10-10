@@ -133,7 +133,7 @@ echo "source ~/realsense-ros/install/setup.bash" >> ~/.bashrc
 To test the installation, launch the RealSense camera node:
 
 ```bash
-ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=true   enable_sync:=true   depth_module.depth_profile:=848,480,90   rgb_camera.color_profile:=848,480,60 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200
+ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=true   enable_sync:=true   depth_module.depth_profile:=848,480,90   rgb_camera.color_profile:=848,480,30 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200
 
 ```
 
@@ -210,8 +210,11 @@ rtabmap ~/.ros/rtabmap.db
  #### 1. Launch camera with infra1 (left)  and infra2(right) 
 
 ```bash
-
+# realsense launch command
 ros2 launch realsense2_camera rs_launch.py enable_infra1:=true enable_infra2:=true  enable_color:=true   enable_sync:=true  rgb_camera.color_profile:=848,480,30 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200 depth_module.infra_profile:=848,480,90
+
+# Zed2i launch command 
+ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false
 
 ```
 
