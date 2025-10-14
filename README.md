@@ -214,7 +214,7 @@ rtabmap ~/.ros/rtabmap.db
 ros2 launch realsense2_camera rs_launch.py enable_infra1:=true enable_infra2:=true  enable_color:=true   enable_sync:=true  rgb_camera.color_profile:=848,480,30 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200 depth_module.infra_profile:=848,480,90
 
 # Zed2i launch command 
-ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false
+ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:="/home/deathstroke/zed_conf.yaml"
 
 ```
 
