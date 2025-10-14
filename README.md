@@ -227,7 +227,7 @@ ros2 run imu_filter_madgwick imu_filter_madgwick_node   --ros-args   -r imu/data
 #### 3. Launch RTABMAP for stereo 
 
 ```bash
-
+#rtabmap with realsense
 ros2 launch rtabmap_launch rtabmap.launch.py \
    rtabmap_args:="--delete_db_on_start" \
    stereo:=true \
@@ -243,6 +243,23 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
    queue_size:=100 \
    imu_topic:=/imu/data
 
+#rtabmap with zed2i
+ros2 launch rtabmap_launch rtabmap.launch.py \
+   rtabmap_args:="--delete_db_on_start" \
+   stereo:=true \
+   left_image_topic:=/zed/zed_node/left_gray/image_rect_gray \
+   right_image_topic:=/zed/zed_node/right_gray/image_rect_gray \
+   left_camera_info_topic:=/zed/zed_node/left_gray/camera_info \
+   right_camera_info_topic:=/zed/zed_node/right_gray/camera_info \
+   frame_id:=zed_left_camera_frame \
+   use_sim_time:=true \
+   approx_sync:=true \
+   qos:=2 \
+   rviz:=false \
+   queue_size:=100 \
+   imu_topic:=/zed/zed_node/imu/data
+
+
 ```
 
 ### Flight Tests with RTABMAP SLAM
@@ -251,6 +268,4 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
 ![alt text](images/ft1707.png)
 ![alt text](images/ft0208-1.png)
 ![alt text](images/ft0208-2.png)
-
-
 
