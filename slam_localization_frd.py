@@ -171,7 +171,7 @@ class SlamLocalization(Node):
         self.prev_att = None
         self.prev_time = None
         self.prev_vel = None
-        self.timer = self.create_timer(0.01, self.timer_callback) # Timer at 100 Hz
+        self.timer = self.create_timer(0.065, self.timer_callback) # Timer at 100 Hz
         self.last_msg = None
 
     def odom_callback(self, msg):
