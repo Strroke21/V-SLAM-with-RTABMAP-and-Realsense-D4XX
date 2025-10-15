@@ -217,6 +217,25 @@ def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, 
         )
     vehicle.mav.send(msg) #delta position and orientation update
 
+def correct_velocity_and_position(vx, vy, true_altitude, est_altitude, dt, prev_pos):
+    # Avoid division by zero
+    if est_altitude == 0:
+        scale_factor = 1.0
+    else:
+        # Scale based on altitude ratio
+        scale_factor = true_altitude / est_altitude
+
+    # Apply correction
+    vx_corrected = vx * scale_factor
+    vy_corrected = vy * scale_factor
+
+    # Integrate to get new position
+    pos_x = prev_pos[0] + vx_corrected * dt
+    pos_y = prev_pos[1] + vy_corrected * dt
+
+    return vx_corrected, vy_corrected, pos_x, pos_y
+
+
 class SlamLocalization(Node):
     def __init__(self, vehicle):
         super().__init__('localization')
@@ -229,7 +248,7 @@ class SlamLocalization(Node):
         self.prev_time = None
         self.prev_vel = None
         self.last_msg = None
-        self.create_timer(0.01, self.timer_callback)  # 100 Hz
+        self.create_timer(0.065, self.timer_callback)  # 15 Hz
 
     def odom_callback(self, msg):
         self.last_msg = msg
