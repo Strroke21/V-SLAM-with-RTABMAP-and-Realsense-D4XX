@@ -176,7 +176,7 @@ EK3_SRC1_POSZ = 1 (Baro which is safer)
 
 EK3_SRC1_VELZ = 6 (you can set it to 6 if 1st flight test looks good)
 
-EK3_SRC1_YAW = 1 (Compass)
+EK3_SRC1_YAW = 6 (ExternalNav)
 
 
 ```

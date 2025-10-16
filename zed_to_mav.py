@@ -1,0 +1,342 @@
+
+#!/usr/bin/python3
+
+import rclpy
+from rclpy.node import Node
+import time
+from transformations import euler_from_quaternion
+from pymavlink import mavutil
+import numpy as np
+from nav_msgs.msg import Odometry
+from rclpy.qos import QoSProfile, ReliabilityPolicy
+import os
+import sys
+import math
+
+os.environ["MAVLINK20"] = "1"
+
+reset_counter = 1
+jump_threshold = 2 # in meters, from trials and errors
+jump_speed_threshold = 30 # in m/s
+fcu_addr = 'tcp:127.0.0.1:5763' #'/dev/ttyACM0'  
+fcu_baud = 115200
+start_time = time.time()
+home_lat = 19.1345054 
+home_lon =  72.9120648
+home_alt = 53
+rng_alt = 0
+initial_yaw =0 # -3.14
+#camera downfacing: cam_x = slam_z, cam_y = -slam_y, cam_z = slam_x
+#camera forward: cam_x = slam_x, cam_y = -slam_y, cam_z = -slam_z
+
+def VehicleMode(vehicle,mode):
+
+    modes = ["STABILIZE", "ACRO", "ALT_HOLD", "AUTO", "GUIDED", "LOITER", "RTL", "CIRCLE","", "LAND"]
+    if mode in modes:
+        mode_id = modes.index(mode)
+    else:
+        mode_id = 12
+    ##### changing to guided mode #####
+    #mode_id = 0:STABILIZE, 1:ACRO, 2: ALT_HOLD, 3:AUTO, 4:GUIDED, 5:LOITER, 6:RTL, 7:CIRCLE, 9:LAND 12:None
+    vehicle.mav.set_mode_send(
+        vehicle.target_system,mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,mode_id)
+
+def get_rangefinder_data(vehicle):
+    global rng_alt
+    # Wait for a DISTANCE_SENSOR or RANGEFINDER message
+    msg = vehicle.recv_match(type='DISTANCE_SENSOR', blocking=False)
+    if msg is not None:
+        dist = msg.current_distance # in meters
+        if dist is not None:
+            rng_alt = dist/100
+
+    return rng_alt
+
+def normalize_yaw(current_yaw, initial_yaw):
+    # Make yaw positive for clockwise rotation (left-to-right)
+    yaw = -(current_yaw - initial_yaw)
+
+    # Normalize to [-pi, pi]
+    yaw = (yaw + math.pi) % (2 * math.pi) - math.pi
+    return yaw
+
+def get_relative_yaw(orientation):
+    global initial_yaw
+
+    # Quaternion to Euler
+    q = [orientation.x, orientation.y, orientation.z, orientation.w]
+    roll, pitch, yaw = euler_from_quaternion(q)
+
+    # Set initial yaw once
+    if initial_yaw is None:
+        initial_yaw = yaw
+
+    # Get relative yaw: right turn = positive
+    relative_yaw = normalize_yaw(yaw, initial_yaw)
+    return relative_yaw
+
+def rotate_to_world(attitude):
+    # Convert from body frame to NED/world frame
+    cr = math.cos(attitude[0])
+    sr = math.sin(attitude[0])
+    cp = math.cos(attitude[1])
+    sp = math.sin(attitude[1])
+    cy = math.cos(attitude[2])
+    sy = math.sin(attitude[2])
+
+    # Rotation matrix R_body_to_world
+    R = [
+        [cp * cy, sr * sp * cy - cr * sy, cr * sp * cy + sr * sy],
+        [cp * sy, sr * sp * sy + cr * cy, cr * sp * sy - sr * cy],
+        [-sp,     sr * cp,                cr * cp]
+    ]
+
+    # Convert attitude to world frame
+    return [
+        math.atan2(R[2][1], R[2][2]),  # Roll
+        math.asin(-R[2][0]),            # Pitch
+        math.atan2(R[1][0], R[0][0])    # Yaw
+    ]
+
+def get_local_position(vehicle):
+    while True:
+        msg = vehicle.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        if msg is not None:
+            pos_x = msg.x # meters
+            pos_y = msg.y  # meters
+            pos_z = msg.z  # Meters
+            vx = msg.vx
+            vy = msg.vy
+            vz = msg.vz
+            return [pos_x,pos_y,pos_z,vx,vy,vz]
+    
+def set_parameter(vehicle, param_name, param_value):
+    # Send PARAM_SET message to change the parameter
+    vehicle.mav.param_set_send(
+        vehicle.target_system,
+        vehicle.target_component,
+        param_name.encode('utf-8'),
+        param_value,
+        param_type=mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
+
+def send_position_setpoint(vehicle, pos_x, pos_y, pos_z,FRAME):
+
+    # Send MAVLink command to set position
+    vehicle.mav.set_position_target_local_ned_send(
+        0,                          # time_boot_ms (not used)
+        vehicle.target_system,       # target_system
+        vehicle.target_component,    # target_component
+        FRAME,  # frame
+        0b110111111000,        # type_mask (only for postion)
+        pos_x, pos_y, pos_z,   # position 
+        0, 0, 0,                 # velocity in m/s (not used)
+        0, 0, 0,                    # acceleration (not used)
+        0, 0                        # yaw, yaw_rate (not used)
+    )    
+
+def set_default_home_position(vehicle, home_lat, home_lon, home_alt):
+    x = 0
+    y = 0
+    z = 0
+    q = [1, 0, 0, 0]   # w x y z
+
+    approach_x = 0
+    approach_y = 0
+    approach_z = 1
+
+    vehicle.mav.set_home_position_send(
+        1,
+        int(home_lat * 1e7), 
+        int(home_lon * 1e7),
+        int(home_alt),
+        x,
+        y,
+        z,
+        q,
+        approach_x,
+        approach_y,
+        approach_z
+    )
+
+def vision_position_send(vehicle, x, y, z, roll, pitch, yaw):
+
+    msg = vehicle.mav.vision_position_estimate_encode(
+        int(time.time() * 1e6),
+        x, y, z,
+        roll, pitch, yaw  
+    )
+    vehicle.mav.send(msg)
+
+def vision_speed_send(vehicle, vx, vy, vz):
+
+    msg = vehicle.mav.vision_speed_estimate_encode(
+        int(time.time() * 1e6),
+        vx, vy, vz
+        )
+    vehicle.mav.send(msg)
+
+def connect(connection_string, baud):
+
+    vehicle = mavutil.mavlink_connection(connection_string,baud)
+    
+    return vehicle
+
+def progress(string):
+    print(string, file=sys.stdout)
+    sys.stdout.flush()
+
+def send_msg_to_gcs(vehicle,text_to_be_sent):
+    # MAV_SEVERITY: 0=EMERGENCY 1=ALERT 2=CRITICAL 3=ERROR, 4=WARNING, 5=NOTICE, 6=INFO, 7=DEBUG, 8=ENUM_END
+    text_msg = 'D455: ' + text_to_be_sent
+    vehicle.mav.statustext_send(mavutil.mavlink.MAV_SEVERITY_INFO, text_msg.encode())
+    progress("INFO: %s" % text_to_be_sent)
+
+def enable_data_stream(vehicle,stream_rate):
+
+    vehicle.wait_heartbeat()
+    vehicle.mav.request_data_stream_send(
+    vehicle.target_system, 
+    vehicle.target_component,
+    mavutil.mavlink.MAV_DATA_STREAM_ALL,
+    stream_rate,1)
+
+def increment_reset_counter():
+    global reset_counter
+    if reset_counter >= 255:
+        reset_counter = 1
+    reset_counter += 1
+
+def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, dt_usec):
+    # Compute delta position
+    dx = curr_pos[0] - prev_pos[0]
+    dy = curr_pos[1] - prev_pos[1]
+    dz = curr_pos[2] - prev_pos[2]
+
+    # Compute delta orientation (simplified)
+    # Use roll-pitch-yaw difference between current and previous quaternions
+    roll1 = prev_att[0]
+    pitch1 = prev_att[1]
+    yaw1 = prev_att[2]
+
+    roll2 = curr_att[0]
+    pitch2 = curr_att[1]
+    yaw2 = curr_att[2]
+
+    droll = roll2 - roll1
+    dpitch = pitch2 - pitch1
+    dyaw = yaw2 - yaw1
+
+    # Normalize angles to [-pi, pi]
+    droll = (droll + np.pi) % (2 * np.pi) - np.pi
+    dpitch = (dpitch + np.pi) % (2 * np.pi) - np.pi
+    dyaw = (dyaw + np.pi) % (2 * np.pi) - np.pi
+    delta_magnitude = np.linalg.norm([dx,dy,dz])  # √(dx² + dy² + dz²)
+    confidence = max(0.0, min(90.0, 90.0 - delta_magnitude * 90.0)) #confidence scaled to 90%
+    print(f"[Confidence]: {int(confidence)}")
+    # Build and send the message
+    msg = vehicle.mav.vision_position_delta_encode(
+        int(time.time() * 1e6),  # time_usec
+        dt_usec,                 # time_delta_usec
+        [droll, dpitch, dyaw],   # delta angles in radians
+        [dx, dy, dz],            # delta position in meters
+        int(confidence) # confidence in percentage
+        )
+    vehicle.mav.send(msg) #delta position and orientation update
+    
+def correct_velocity_and_position(vx, vy, true_altitude, est_altitude, dt, prev_pos):
+    # Avoid division by zero
+    if est_altitude == 0:
+        scale_factor = 1.0
+    else:
+        # Scale based on altitude ratio
+        scale_factor = true_altitude / est_altitude
+
+    # Apply correction
+    vx_corrected = vx * scale_factor
+    vy_corrected = vy * scale_factor
+
+    # Integrate to get new position
+    pos_x = prev_pos[0] + vx_corrected * dt
+    pos_y = prev_pos[1] + vy_corrected * dt
+
+    return vx_corrected, vy_corrected, pos_x, pos_y
+
+class SlamLocalization(Node):
+    def __init__(self, vehicle):
+        super().__init__('localization')
+        qos = QoSProfile(depth=0, reliability=ReliabilityPolicy.BEST_EFFORT)
+        self.odom_subscription = self.create_subscription(Odometry,'/rtabmap/odom', self.odom_callback, qos)
+        self.vehicle = vehicle
+        self.counter = 0
+        self.prev_pos = None
+        self.prev_att = None
+        self.prev_time = None
+        self.prev_vel = None
+        self.last_msg = None
+        self.create_timer(0.065, self.timer_callback)  # 20 Hz
+        self.hz_counter = 0
+
+    def odom_callback(self, msg):
+        self.last_msg = msg
+
+    def timer_callback(self):
+        if self.last_msg:
+            msg = self.last_msg
+            linear_vel = msg.twist.twist.linear
+            position = msg.pose.pose.position
+            orientation = msg.pose.pose.orientation
+            q = [orientation.x, orientation.y, orientation.z, orientation.w]
+            roll, pitch, yaw = euler_from_quaternion(q)
+            attitude = [roll, pitch, yaw]
+            cam_x, cam_y, _ = position.z, -position.y, position.x  # Adjusted for downfacing camera
+            cam_z = -get_rangefinder_data(self.vehicle)  # Use rangefinder data for Z
+            cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
+            cam_roll, cam_pitch, cam_yaw = rotate_to_world(attitude) # Adjusted for downfacing camera
+            #cam_yaw = get_relative_yaw(orientation)
+            rc_chan = self.vehicle.recv_match(type='RC_CHANNELS',blocking=True)
+            if rc_chan.chan6_raw>=1900:
+                self.counter += 1
+                if self.counter==1:
+                    VehicleMode(self.vehicle,"GUIDED")
+                    print("In Guided Mode")
+                    time.sleep(1)
+                    send_position_setpoint(self.vehicle,0,0,-15,mavutil.mavlink.MAV_FRAME_LOCAL_NED)
+                    print("heading to origin...")
+
+            current_time = time.time()
+            curr_pos = [cam_x, cam_y, cam_z]
+            curr_att = [cam_roll, cam_pitch, cam_yaw]
+            curr_vel = [cam_vx, cam_vy, cam_vz]
+
+            if self.prev_pos is not None and self.prev_att is not None:
+                self.hz_counter += 1
+                dt_sec = (current_time - self.prev_time)
+                # vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
+                vx,vy,pos_x,pos_y = correct_velocity_and_position(cam_vx,cam_vy,cam_z,position.x,dt_sec,self.prev_pos)
+                vision_position_send(self.vehicle, pos_x, pos_y, cam_z, cam_roll, cam_pitch, cam_yaw)
+                vision_speed_send(self.vehicle, vx, vy, cam_vz)
+                hz = self.hz_counter/(current_time-start_time)
+                print(f'x: {pos_x:.2f}, y: {pos_y:.2f}, z: {cam_z:.2f}, slam_Hz: {hz:.2f}')
+                print(f"ROLL: {cam_roll:.2f}, PITCH: {cam_pitch:.2f}, YAW: {cam_yaw:.2f}")
+                print(f"Vx: {vx:.2f}, Vy: {vy:.2f}, Vz: {cam_vz:.2f}")
+                    
+            self.prev_pos = curr_pos
+            self.prev_att = curr_att 
+            self.prev_time = current_time
+            self.prev_vel = curr_vel
+            
+        
+def main(args=None):
+    rclpy.init(args=args)
+    vehicle = connect(fcu_addr,baud=fcu_baud) 
+    enable_data_stream(vehicle, 100)
+    time.sleep(1)  
+    #send_msg_to_gcs(vehicle, "Slam localization node started")
+    set_default_home_position(vehicle, home_lat, home_lon, home_alt)
+    localization = SlamLocalization(vehicle)
+    rclpy.spin(localization)
+    localization.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
