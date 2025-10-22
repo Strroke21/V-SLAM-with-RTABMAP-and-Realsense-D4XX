@@ -180,43 +180,6 @@ def increment_reset_counter():
         reset_counter = 1
     reset_counter += 1
 
-def vision_position_delta_send(vehicle, prev_pos, prev_att, curr_pos, curr_att, dt_usec):
-    # Compute delta position
-    dx = curr_pos[0] - prev_pos[0]
-    dy = curr_pos[1] - prev_pos[1]
-    dz = curr_pos[2] - prev_pos[2]
-
-    # Compute delta orientation (simplified)
-    # Use roll-pitch-yaw difference between current and previous quaternions
-    roll1 = prev_att[0]
-    pitch1 = prev_att[1]
-    yaw1 = prev_att[2]
-
-    roll2 = curr_att[0]
-    pitch2 = curr_att[1]
-    yaw2 = curr_att[2]
-
-    droll = roll2 - roll1
-    dpitch = pitch2 - pitch1
-    dyaw = yaw2 - yaw1
-
-    # Normalize angles to [-pi, pi]
-    droll = (droll + np.pi) % (2 * np.pi) - np.pi
-    dpitch = (dpitch + np.pi) % (2 * np.pi) - np.pi
-    dyaw = (dyaw + np.pi) % (2 * np.pi) - np.pi
-    delta_magnitude = np.linalg.norm([dx,dy,dz])  # √(dx² + dy² + dz²)
-    confidence = max(0.0, min(90.0, 90.0 - delta_magnitude * 90.0)) #confidence scaled to 90%
-    print(f"[Confidence]: {int(confidence)}")
-    # Build and send the message
-    msg = vehicle.mav.vision_position_delta_encode(
-        int(time.time() * 1e6),  # time_usec
-        dt_usec,                 # time_delta_usec
-        [droll, dpitch, dyaw],   # delta angles in radians
-        [dx, dy, dz],            # delta position in meters
-        int(confidence) # confidence in percentage
-        )
-    vehicle.mav.send(msg) #delta position and orientation update
-
 def correct_velocity_and_position(vx, vy, true_altitude, est_altitude, dt, prev_pos):
     # Avoid division by zero
     if est_altitude == 0:
@@ -278,8 +241,6 @@ class SlamLocalization(Node):
 
             if self.prev_pos is not None and self.prev_att is not None:
                 dt_usec = int((current_time - self.prev_time) * 1e6)
-                # vision_position_delta_send(self.vehicle, self.prev_pos, self.prev_att, curr_pos, curr_att, dt_usec)
-
                 delta_position = [curr_pos[0] - self.prev_pos[0], curr_pos[1] - self.prev_pos[1], curr_pos[2] - self.prev_pos[2]]
                 delta_velocity = [curr_vel[0] - self.prev_vel[0], curr_vel[1] - self.prev_vel[1], curr_vel[2] - self.prev_vel[2]]
                 position_displacement = np.linalg.norm(delta_position)
