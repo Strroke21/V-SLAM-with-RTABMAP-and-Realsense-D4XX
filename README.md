@@ -106,6 +106,20 @@ sudo make install
 
 ## III. Camera Node Setup
 
+### ** Realsense SDK Install
+
+```bash
+cd ~
+git clone https://github.com/IntelRealSense/librealsense.git
+cd librealsense
+mkdir build && cd build
+cmake .. -DFORCE_RSUSB_BACKEND=ON -DBUILD_EXAMPLES=true -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+
+```
+
 ### **1. Clone the `realsense_ros` Repository**
 
 ```bash
