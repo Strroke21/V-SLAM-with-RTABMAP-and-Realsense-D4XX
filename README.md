@@ -112,6 +112,8 @@ sudo make install
 cd ~
 git clone https://github.com/IntelRealSense/librealsense.git
 cd librealsense
+sudo cp config/99-realsense-libusb.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
 mkdir build && cd build
 cmake .. -DFORCE_RSUSB_BACKEND=ON -DBUILD_EXAMPLES=true -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc)
