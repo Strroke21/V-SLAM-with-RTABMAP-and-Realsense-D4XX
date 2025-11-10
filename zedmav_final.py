@@ -165,7 +165,7 @@ class SlamLocalization(Node):
         cam_x, cam_y = position.z, -position.y
         cam_z = -get_rangefinder_data(self.vehicle)
         cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x
-        cam_roll, cam_pitch, cam_yaw = rotate_to_world(attitude)
+        cam_roll, cam_pitch, cam_yaw = attitude[0], attitude[1], -attitude[2] #camera should be forward initially to remove cam_yaw ambiguity before facing it down
 
         curr_pos = [cam_x, cam_y, cam_z]
         curr_att = [cam_roll, cam_pitch, cam_yaw]
@@ -178,7 +178,8 @@ class SlamLocalization(Node):
             vision_speed_send(self.vehicle, vx, vy, cam_vz)
             hz = 1.0/dt_sec if dt_sec>0 else 0
             print(f"x:{pos_x:.2f}, y:{pos_y:.2f}, z:{cam_z:.2f}, Hz:{hz:.2f}")
-
+            print(f"Roll:{cam_roll:.2f}, Pitch:{cam_pitch:.2f}, Yaw:{cam_yaw:.2f}")
+            
         self.prev_pos = curr_pos
         self.prev_att = curr_att
         self.prev_time = curr_time
