@@ -229,6 +229,7 @@ class SlamLocalization(Node):
             cam_z = -get_rangefinder_data(self.vehicle)  # Use rangefinder data for Z
             cam_vx, cam_vy, cam_vz = linear_vel.z, -linear_vel.y, linear_vel.x  # Adjusted for downfacing camera
             cam_roll, cam_pitch, cam_yaw = attitude[0], attitude[1], -attitude[2] #rotate_to_world(attitude) # Adjusted for downfacing camera
+            #camera should be forward initially to remove cam_yaw ambiguity before facing it down
 
             vision_position_send(self.vehicle, cam_x, cam_y, cam_z, cam_roll, cam_pitch, cam_yaw)
             vision_speed_send(self.vehicle, cam_vx, cam_vy, cam_vz)
