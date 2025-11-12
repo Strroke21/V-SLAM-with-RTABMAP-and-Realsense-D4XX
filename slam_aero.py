@@ -1,0 +1,260 @@
+#!/usr/bin/python3
+
+import rclpy
+from rclpy.node import Node
+import time
+from transformations import euler_from_quaternion
+from pymavlink import mavutil
+import numpy as np
+from nav_msgs.msg import Odometry
+from rclpy.qos import QoSProfile, ReliabilityPolicy
+import os
+import subprocess
+import math
+import transformations as tf
+import sys
+
+os.environ["MAVLINK20"] = "1"
+
+# ----------------------- CONFIGURATION -----------------------
+FCU_ADDR = '/dev/ttyACM0'
+FCU_BAUD = 115200
+HOME_LAT = 19.1345054
+HOME_LON = 72.9120648
+HOME_ALT = 53
+RANGEFINDER_THRESHOLD = 0.1
+RTABMAP_LAUNCH_DELAY = 5
+STREAM_RATE = 100
+
+debug_enable = 1  # Set to 1 to enable debug messages
+
+# ----------------------- GLOBAL VARIABLES -----------------------
+rng_alt = 0
+rtabmap_started = False
+scale_factor = 1.0
+compass_enabled = 0
+camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree forward, 3: downfacing back
+H_aeroRef_aeroBody = None
+V_aeroRef_aeroBody = None
+
+if camera_orientation == 0:     # Forward, USB port to the right
+    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
+    H_cambody_aeroBody = np.linalg.inv(H_aeroRef_camRef)
+elif camera_orientation == 1:   # Downfacing, USB port to the right
+    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
+    H_cambody_aeroBody = np.array([[0,1,0,0],[1,0,0,0],[0,0,-1,0],[0,0,0,1]])
+elif camera_orientation == 2:   # 45degree forward, USB port to the right
+    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
+    H_cambody_aeroBody = (tf.euler_matrix(math.pi/4, 0, 0)).dot(np.linalg.inv(H_aeroRef_camRef))
+elif camera_orientation == 3:   # Downfacing, USB port to the back
+    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
+    H_cambody_aeroBody = np.array([[-1,0,0,0],[0,1,0,0],[0,0,-1,0],[0,0,0,1]])
+else:                           # Default is facing forward, USB port to the right
+    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
+    H_cambody_aeroBody = np.linalg.inv(H_aeroRef_camRef)
+
+# ----------------------- MAVLINK HELPER FUNCTIONS -----------------------
+def progress(string):
+    print(string, file=sys.stdout)
+    sys.stdout.flush()
+
+def connect_vehicle(connection_string, baud):
+    vehicle = mavutil.mavlink_connection(connection_string, baud)
+    vehicle.wait_heartbeat()
+    return vehicle
+
+def enable_data_stream(vehicle, stream_rate):
+    vehicle.mav.request_data_stream_send(vehicle.target_system,
+                                        vehicle.target_component,
+                                        mavutil.mavlink.MAV_DATA_STREAM_ALL,
+                                        stream_rate, 1)
+
+def get_rangefinder_data(vehicle):
+    global rng_alt
+    msg = vehicle.recv_match(type='DISTANCE_SENSOR', blocking=False)
+    if msg and msg.current_distance is not None:
+        rng_alt = msg.current_distance / 100.0
+    return rng_alt
+
+def set_default_home_position(vehicle, lat, lon, alt):
+    x = y = z = 0
+    q = [1, 0, 0, 0]
+    approach_x, approach_y, approach_z = 0, 0, 1
+    vehicle.mav.set_home_position_send(1,
+                                       int(lat*1e7),
+                                       int(lon*1e7),
+                                       int(alt),
+                                       x, y, z, q,
+                                       approach_x, approach_y, approach_z)
+
+def VehicleMode(vehicle, mode):
+    modes = ["STABILIZE","ACRO","ALT_HOLD","AUTO","GUIDED","LOITER","RTL","CIRCLE","","LAND"]
+    mode_id = modes.index(mode) if mode in modes else 12
+    vehicle.mav.set_mode_send(vehicle.target_system,
+                              mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+                              mode_id)
+
+def get_heading(vehicle):
+    msg = vehicle.recv_match(type='AHRS2', blocking=True)
+    if msg:
+        return msg.yaw
+
+def rotate_to_world(attitude):
+    cr = math.cos(attitude[0]); sr = math.sin(attitude[0])
+    cp = math.cos(attitude[1]); sp = math.sin(attitude[1])
+    cy = math.cos(attitude[2]); sy = math.sin(attitude[2])
+    R = [
+        [cp*cy, sr*sp*cy - cr*sy, cr*sp*cy + sr*sy],
+        [cp*sy, sr*sp*sy + cr*cy, cr*sp*sy - sr*cy],
+        [-sp, sr*cp, cr*cp]
+    ]
+    return [math.atan2(R[2][1], R[2][2]),
+            math.asin(-R[2][0]),
+            math.atan2(R[1][0], R[0][0])]
+
+def scaling_factor(true_altitude, est_altitude):
+    scale = true_altitude / est_altitude if est_altitude != 0 else 1.0
+    return scale
+
+# ----------------------- MAVLINK VISION HELPERS -----------------------
+def vision_position_send(vehicle, x, y, z, roll, pitch, yaw):
+    msg = vehicle.mav.vision_position_estimate_encode(
+        int(time.time()*1e6), x, y, z, roll, pitch, yaw)
+    vehicle.mav.send(msg)
+
+def vision_speed_send(vehicle, vx, vy, vz):
+    msg = vehicle.mav.vision_speed_estimate_encode(int(time.time()*1e6), vx, vy, vz)
+    vehicle.mav.send(msg)
+
+def correct_velocity_and_position(vx, vy, true_altitude, est_altitude, dt, prev_pos):
+    scale = true_altitude / est_altitude if est_altitude != 0 else 1.0
+    vx_corr = vx * scale
+    vy_corr = vy * scale
+    pos_x = prev_pos[0] + vx_corr * dt
+    pos_y = prev_pos[1] + vy_corr * dt
+    return vx_corr, vy_corr, pos_x, pos_y
+
+# ----------------------- SLAM LOCALIZATION NODE -----------------------
+class SlamLocalization(Node):
+    def __init__(self, vehicle):
+        super().__init__('slam_localization')
+        qos = QoSProfile(depth=0, reliability=ReliabilityPolicy.BEST_EFFORT)
+        self.vehicle = vehicle
+        self.odom_subscription = self.create_subscription(Odometry, '/rtabmap/odom', self.odom_callback, qos)
+        self.last_msg = None
+        self.prev_pos = None
+        self.prev_att = None
+        self.prev_time = None
+        self.create_timer(0.065, self.timer_callback)
+        self.initial_compass_yaw = get_heading(vehicle) 
+
+    def odom_callback(self, msg):
+        self.last_msg = msg
+
+    def timer_callback(self):
+        global rtabmap_started
+
+        # Launch RTAB-Map if height > threshold
+        if not rtabmap_started:
+            time.sleep(RTABMAP_LAUNCH_DELAY)
+            subprocess.Popen([
+                "ros2", "launch", "rtabmap_launch", "rtabmap.launch.py",
+                "rtabmap_args:='--delete_db_on_start'",
+                "stereo:=true",
+                "left_image_topic:=/zed/zed_node/left_gray/image_rect_gray",
+                "right_image_topic:=/zed/zed_node/right_gray/image_rect_gray",
+                "left_camera_info_topic:=/zed/zed_node/left_gray/camera_info",
+                "right_camera_info_topic:=/zed/zed_node/right_gray/camera_info",
+                "frame_id:=zed_left_camera_frame",
+                "use_sim_time:=true",
+                "approx_sync:=true",
+                "qos:=2",
+                "rviz:=false",
+                "queue_size:=100",
+                "imu_topic:=/zed/zed_node/imu/data"
+            ])
+            rtabmap_started = True
+
+        if self.last_msg is None:
+            return
+
+        msg = self.last_msg
+        linear_vel = msg.twist.twist.linear
+        position = msg.pose.pose.position
+        orientation = msg.pose.pose.orientation
+
+        H_camRef_cambody = tf.quaternion_matrix([orientation.w, -orientation.y, orientation.z, -orientation.x])
+        H_camRef_cambody[0][3] = -position.y
+        H_camRef_cambody[1][3] = position.z
+        H_camRef_cambody[2][3] = -position.x
+
+        # Transform to aeronautic coordinates (body AND reference frame!)
+        H_aeroRef_aeroBody = H_aeroRef_camRef.dot(H_camRef_cambody.dot(H_cambody_aeroBody))
+
+        # Calculate GLOBAL XYZ speed (speed from camera is already GLOBAL)
+        V_aeroRef_aeroBody = tf.quaternion_matrix([1,0,0,0])
+        V_aeroRef_aeroBody[0][3] = -linear_vel.y
+        V_aeroRef_aeroBody[1][3] = linear_vel.z
+        V_aeroRef_aeroBody[2][3] = -linear_vel.x
+        V_aeroRef_aeroBody = H_aeroRef_camRef.dot(V_aeroRef_aeroBody)
+        rng_pos_z = -get_rangefinder_data(self.vehicle)
+
+        #angles
+        rpy_rad = np.array( tf.euler_from_matrix(H_aeroRef_aeroBody, 'sxyz'))
+        # Realign heading to face north using initial compass data
+        if compass_enabled==1:
+            H_aeroRef_aeroBody = H_aeroRef_aeroBody.dot( tf.euler_matrix(0, 0, self.initial_compass_yaw, 'szyx'))
+
+        curr_pos = [H_aeroRef_aeroBody[0][3], H_aeroRef_aeroBody[1][3], H_aeroRef_aeroBody[2][3]]
+        curr_att = [rpy_rad[0], rpy_rad[1], rpy_rad[2]]
+        curr_vel = [V_aeroRef_aeroBody[0][3], V_aeroRef_aeroBody[1][3], V_aeroRef_aeroBody[2][3]]
+        curr_time = time.time()
+
+        if self.prev_pos is not None:
+            dt_sec = curr_time - self.prev_time
+            vx, vy, pos_x, pos_y = correct_velocity_and_position(
+                curr_vel[0], curr_vel[1],
+                rng_pos_z, H_aeroRef_aeroBody[2][3], dt_sec, self.prev_pos)
+            
+            print(f"Corrected Velocity: vx={vx}, vy={vy}, vz={curr_vel[2]}")
+            print(f"Corrected Position: x={pos_x}, y={pos_y}, z={rng_pos_z}")
+
+            vision_speed_send(self.vehicle, vx, vy, curr_vel[2])
+            vision_position_send(self.vehicle, pos_x, pos_y, rng_pos_z,curr_att[0], curr_att[1], curr_att[2])
+            
+        self.prev_pos = curr_pos
+        self.prev_att = curr_att        
+        self.prev_time = curr_time
+
+        # Show debug messages here
+        if debug_enable == 1:
+            os.system('clear') # This helps in displaying the messages to be more readable
+            progress("DEBUG: Raw RPY[deg]: {}".format( np.array( tf.euler_from_matrix( H_camRef_cambody, 'sxyz')) * 180 / math.pi))
+            progress("DEBUG: NED RPY[deg]: {}".format( np.array( tf.euler_from_matrix( H_aeroRef_aeroBody, 'sxyz')) * 180 / math.pi))
+            progress("DEBUG: Raw pos xyz : {}".format( np.array( [position.x, position.y, position.z])))
+            progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix( H_aeroRef_aeroBody))))
+
+
+# ----------------------- MAIN -----------------------
+def main(args=None):
+    rclpy.init(args=args)
+    vehicle = connect_vehicle(FCU_ADDR, FCU_BAUD)
+    enable_data_stream(vehicle, STREAM_RATE)
+    time.sleep(1)
+    set_default_home_position(vehicle, HOME_LAT, HOME_LON, HOME_ALT)
+    print("Launching ZED2i camera...")
+    subprocess.Popen([
+        "ros2", "launch", "zed_wrapper", "zed_camera.launch.py",
+        "camera_model:=zed2i",
+        "enable_ipc:=false",
+        'ros_params_override_path:=/home/deathstroke/zed_conf.yaml'
+    ])
+    print("Waiting 20 seconds for ZED2i initialization...")
+    time.sleep(20)
+    slam_node = SlamLocalization(vehicle)
+    rclpy.spin(slam_node)
+    slam_node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
