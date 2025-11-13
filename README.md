@@ -283,5 +283,4 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
 ![alt text](images/ft1407.png)
 ![alt text](images/ft1707.png)
 ![alt text](images/ft0208-1.png)
-![alt text](images/ft0208-2.png)
 
