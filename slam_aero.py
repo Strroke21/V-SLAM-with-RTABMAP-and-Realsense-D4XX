@@ -33,7 +33,7 @@ rng_alt = 0
 rtabmap_started = False
 scale_factor = 1.0
 compass_enabled = 0
-camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
+camera_orientation = 1 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
@@ -60,7 +60,6 @@ elif camera_orientation == 2:
 else:
     R_cam = np.eye(4)
     H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
-
 
 # ----------------------- MAVLINK HELPER FUNCTIONS -----------------------
 def progress(string):
