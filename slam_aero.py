@@ -50,11 +50,11 @@ if camera_orientation == 0:
     H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
 
 elif camera_orientation == 1:
-    R_cam = tf.euler_matrix(0, math.pi/2, 0)   # roll, pitch, yaw
+    R_cam = tf.euler_matrix(0, -math.pi/2, 0)   # roll, pitch, yaw
     H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
 
 elif camera_orientation == 2:
-    R_cam = tf.euler_matrix(0, math.pi/4, 0)
+    R_cam = tf.euler_matrix(0, -math.pi/4, 0)
     H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
 
 else:
