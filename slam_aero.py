@@ -33,25 +33,34 @@ rng_alt = 0
 rtabmap_started = False
 scale_factor = 1.0
 compass_enabled = 0
-camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree forward, 3: downfacing back
+camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
+# Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
 
-if camera_orientation == 0:     # Forward, USB port to the right
-    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
-    H_cambody_aeroBody = np.linalg.inv(H_aeroRef_camRef)
-elif camera_orientation == 1:   # Downfacing, USB port to the right
-    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
-    H_cambody_aeroBody = np.array([[0,1,0,0],[1,0,0,0],[0,0,-1,0],[0,0,0,1]])
-elif camera_orientation == 2:   # 45degree forward, USB port to the right
-    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
-    H_cambody_aeroBody = (tf.euler_matrix(math.pi/4, 0, 0)).dot(np.linalg.inv(H_aeroRef_camRef))
-elif camera_orientation == 3:   # Downfacing, USB port to the back
-    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
-    H_cambody_aeroBody = np.array([[-1,0,0,0],[0,1,0,0],[0,0,-1,0],[0,0,0,1]])
-else:                           # Default is facing forward, USB port to the right
-    H_aeroRef_camRef   = np.array([[0,0,-1,0],[1,0,0,0],[0,-1,0,0],[0,0,0,1]])
-    H_cambody_aeroBody = np.linalg.inv(H_aeroRef_camRef)
+H_aeroRef_camRef = np.array([
+    [1,  0,  0, 0],   # X forward -> forward
+    [0, -1,  0, 0],   # Y left -> right
+    [0,  0, -1, 0],   # Z up -> down
+    [0,  0,  0, 1]
+])
+
+if camera_orientation == 0:
+    R_cam = np.eye(4)
+    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+
+elif camera_orientation == 1:
+    R_cam = tf.euler_matrix(0, math.pi/2, 0)   # roll, pitch, yaw
+    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+
+elif camera_orientation == 2:
+    R_cam = tf.euler_matrix(0, math.pi/4, 0)
+    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+
+else:
+    R_cam = np.eye(4)
+    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+
 
 # ----------------------- MAVLINK HELPER FUNCTIONS -----------------------
 def progress(string):
@@ -183,24 +192,28 @@ class SlamLocalization(Node):
         position = msg.pose.pose.position
         orientation = msg.pose.pose.orientation
 
-        H_camRef_cambody = tf.quaternion_matrix([orientation.w, -orientation.y, orientation.z, -orientation.x])
-        H_camRef_cambody[0][3] = -position.y
-        H_camRef_cambody[1][3] = position.z
-        H_camRef_cambody[2][3] = -position.x
+        # as per rtabmap coordinate system
+        q = [orientation.w, orientation.x, orientation.y, orientation.z]
+
+        H_camRef_cambody = tf.quaternion_matrix(q)
+        H_camRef_cambody[0][3] = position.x
+        H_camRef_cambody[1][3] = position.y
+        H_camRef_cambody[2][3] = position.z
 
         # Transform to aeronautic coordinates (body AND reference frame!)
         H_aeroRef_aeroBody = H_aeroRef_camRef.dot(H_camRef_cambody.dot(H_cambody_aeroBody))
 
-        # Calculate GLOBAL XYZ speed (speed from camera is already GLOBAL)
+        # Calculate GLOBAL XYZ speed (speed from camera is already GLOBAL) as per T265
         V_aeroRef_aeroBody = tf.quaternion_matrix([1,0,0,0])
-        V_aeroRef_aeroBody[0][3] = -linear_vel.y
-        V_aeroRef_aeroBody[1][3] = linear_vel.z
-        V_aeroRef_aeroBody[2][3] = -linear_vel.x
+        V_aeroRef_aeroBody[0][3] = linear_vel.x
+        V_aeroRef_aeroBody[1][3] = linear_vel.y
+        V_aeroRef_aeroBody[2][3] = linear_vel.z
         V_aeroRef_aeroBody = H_aeroRef_camRef.dot(V_aeroRef_aeroBody)
         rng_pos_z = -get_rangefinder_data(self.vehicle)
 
         #angles
         rpy_rad = np.array( tf.euler_from_matrix(H_aeroRef_aeroBody, 'sxyz'))
+        
         # Realign heading to face north using initial compass data
         if compass_enabled==1:
             H_aeroRef_aeroBody = H_aeroRef_aeroBody.dot( tf.euler_matrix(0, 0, self.initial_compass_yaw, 'szyx'))
@@ -221,19 +234,18 @@ class SlamLocalization(Node):
 
             vision_speed_send(self.vehicle, vx, vy, curr_vel[2])
             vision_position_send(self.vehicle, pos_x, pos_y, rng_pos_z,curr_att[0], curr_att[1], curr_att[2])
-            
+
+            # Show debug messages here
+            if debug_enable == 1:
+                os.system('clear') # This helps in displaying the messages to be more readable
+                progress("DEBUG: Raw RPY[deg]: {}".format( np.array( tf.euler_from_matrix( H_camRef_cambody, 'sxyz')) * 180 / math.pi))
+                progress("DEBUG: NED RPY[deg]: {}".format( np.array(rpy_rad) * 180 / math.pi))
+                progress("DEBUG: Raw pos xyz : {}".format( np.array( [position.x, position.y, position.z])))
+                progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix( H_aeroRef_aeroBody))))
+
         self.prev_pos = curr_pos
         self.prev_att = curr_att        
         self.prev_time = curr_time
-
-        # Show debug messages here
-        if debug_enable == 1:
-            os.system('clear') # This helps in displaying the messages to be more readable
-            progress("DEBUG: Raw RPY[deg]: {}".format( np.array( tf.euler_from_matrix( H_camRef_cambody, 'sxyz')) * 180 / math.pi))
-            progress("DEBUG: NED RPY[deg]: {}".format( np.array( tf.euler_from_matrix( H_aeroRef_aeroBody, 'sxyz')) * 180 / math.pi))
-            progress("DEBUG: Raw pos xyz : {}".format( np.array( [position.x, position.y, position.z])))
-            progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix( H_aeroRef_aeroBody))))
-
 
 # ----------------------- MAIN -----------------------
 def main(args=None):
