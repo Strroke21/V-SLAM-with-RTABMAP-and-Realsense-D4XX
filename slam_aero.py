@@ -33,33 +33,30 @@ rng_alt = 0
 rtabmap_started = False
 scale_factor = 1.0
 compass_enabled = 0
-camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
+camera_orientation = 2 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
 
 H_aeroRef_camRef = np.array([
-    [1,  0,  0, 0],   # X forward -> forward
-    [0, -1,  0, 0],   # Y left -> right
-    [0,  0, -1, 0],   # Z up -> down
+    [1,  0,  0, 0],   # X forward --> forward
+    [0, -1,  0, 0],   # Y left --> right
+    [0,  0, -1, 0],   # Z up --> down
     [0,  0,  0, 1]
 ])
 
+
 if camera_orientation == 0:
-    R_cam = np.eye(4)
-    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+    H_cambody_aeroBody = (H_aeroRef_camRef)
 
-elif camera_orientation == 1:
-    R_cam = tf.euler_matrix(0, -math.pi/2, 0)   # roll, pitch, yaw
-    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+if camera_orientation == 1:  # downfacing (90° pitch down)
+    H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/2,0)).dot(H_aeroRef_camRef)
 
-elif camera_orientation == 2:
-    R_cam = tf.euler_matrix(0, -math.pi/4, 0)
-    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+elif camera_orientation == 2: # 45 degree tilted down forward
+    H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/4,0)).dot(H_aeroRef_camRef)
 
 else:
-    R_cam = np.eye(4)
-    H_cambody_aeroBody = H_aeroRef_camRef.dot(R_cam)
+    H_cambody_aeroBody = (H_aeroRef_camRef)
 
 # ----------------------- MAVLINK HELPER FUNCTIONS -----------------------
 def progress(string):
@@ -173,7 +170,7 @@ class SlamLocalization(Node):
                 "right_image_topic:=/zed/zed_node/right_gray/image_rect_gray",
                 "left_camera_info_topic:=/zed/zed_node/left_gray/camera_info",
                 "right_camera_info_topic:=/zed/zed_node/right_gray/camera_info",
-                "frame_id:=zed_left_camera_frame",
+                "frame_id:=zed_camera_link",
                 "use_sim_time:=true",
                 "approx_sync:=true",
                 "qos:=2",
@@ -192,9 +189,9 @@ class SlamLocalization(Node):
         orientation = msg.pose.pose.orientation
 
         # as per rtabmap coordinate system
-        q = [orientation.w, orientation.x, orientation.y, orientation.z]
+        q_cam = [orientation.w, orientation.x, orientation.y, orientation.z] 
 
-        H_camRef_cambody = tf.quaternion_matrix(q)
+        H_camRef_cambody = tf.quaternion_matrix(q_cam)
         H_camRef_cambody[0][3] = position.x
         H_camRef_cambody[1][3] = position.y
         H_camRef_cambody[2][3] = position.z
