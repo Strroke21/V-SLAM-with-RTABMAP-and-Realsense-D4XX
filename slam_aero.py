@@ -104,18 +104,6 @@ def get_heading(vehicle):
     if msg:
         return msg.yaw
 
-def rotate_to_world(attitude):
-    cr = math.cos(attitude[0]); sr = math.sin(attitude[0])
-    cp = math.cos(attitude[1]); sp = math.sin(attitude[1])
-    cy = math.cos(attitude[2]); sy = math.sin(attitude[2])
-    R = [
-        [cp*cy, sr*sp*cy - cr*sy, cr*sp*cy + sr*sy],
-        [cp*sy, sr*sp*sy + cr*cy, cr*sp*sy - sr*cy],
-        [-sp, sr*cp, cr*cp]
-    ]
-    return [math.atan2(R[2][1], R[2][2]),
-            math.asin(-R[2][0]),
-            math.atan2(R[1][0], R[0][0])]
 
 def scaling_factor(true_altitude, est_altitude):
     scale = true_altitude / est_altitude if est_altitude != 0 else 1.0
