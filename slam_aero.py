@@ -32,7 +32,7 @@ debug_enable = 1  # Set to 1 to enable debug messages
 rng_alt = 0
 rtabmap_started = False
 scale_factor = 1.0
-compass_enabled = 0
+compass_enabled = 0 # Set to 1 to enable compass heading correction, 0 to disable
 camera_orientation = 2 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
@@ -238,6 +238,7 @@ class SlamLocalization(Node):
                 progress("DEBUG: NED RPY[deg]: {}".format( np.array(rpy_rad) * 180 / math.pi))
                 progress("DEBUG: Raw pos xyz : {}".format( np.array( [position.x, position.y, position.z])))
                 progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix( H_aeroRef_aeroBody))))
+                print(f"Scaled Position: x={pos_x}, y={pos_y}, z={rng_pos_z}")
 
         self.prev_pos = curr_pos
         self.prev_att = curr_att        
