@@ -38,24 +38,42 @@ camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) fo
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
 
-H_aeroRef_camRef = np.array([
+if camera_orientation == 0:
+    H_aeroRef_camRef = np.array([
     [1,  0,  0, 0],   # X forward --> forward
     [0, -1,  0, 0],   # Y left --> right
     [0,  0, -1, 0],   # Z up --> down
     [0,  0,  0, 1]
-])
-
-
-if camera_orientation == 0:
+    ])
     H_cambody_aeroBody = H_aeroRef_camRef
 
 if camera_orientation == 1:  # downfacing (90° pitch down)
-    H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/2,0)).dot(H_aeroRef_camRef)
+    H_aeroRef_camRef = np.array([
+    [0,  0, 1, 0],   
+    [0,  -1,  0, 0],  
+    [1, 0,  0,  0],   
+    [0,  0,  0, 1]
+    ])
+    # H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/2,0)).dot(H_aeroRef_camRef)
+    H_cambody_aeroBody = H_aeroRef_camRef
 
 elif camera_orientation == 2: # 45 degree tilted down forward
-    H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/4,0)).dot(H_aeroRef_camRef)
+    H_aeroRef_camRef = np.array([
+    [0.7071, 0, 0.7071, 0],   # X forward --> forward
+    [0, -1, 0, 0],   # Y left --> right
+    [0.7071, 0, -0.7071, 0],   # Z up --> down
+    [0,  0,  0, 1]
+    ])
+    # H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/4,0)).dot(H_aeroRef_camRef)
+    H_cambody_aeroBody = H_aeroRef_camRef
 
 else:
+    H_aeroRef_camRef = np.array([
+    [1,  0,  0, 0],   # X forward --> forward
+    [0, -1,  0, 0],   # Y left --> right
+    [0,  0, -1, 0],   # Z up --> down
+    [0,  0,  0, 1]
+    ])
     H_cambody_aeroBody = H_aeroRef_camRef
 
 # ----------------------- MAVLINK HELPER FUNCTIONS -----------------------
