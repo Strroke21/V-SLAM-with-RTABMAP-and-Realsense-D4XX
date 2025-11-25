@@ -47,7 +47,7 @@ H_aeroRef_camRef = np.array([
 
 
 if camera_orientation == 0:
-    H_cambody_aeroBody = (H_aeroRef_camRef)
+    H_cambody_aeroBody = H_aeroRef_camRef
 
 if camera_orientation == 1:  # downfacing (90° pitch down)
     H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/2,0)).dot(H_aeroRef_camRef)
@@ -56,7 +56,7 @@ elif camera_orientation == 2: # 45 degree tilted down forward
     H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/4,0)).dot(H_aeroRef_camRef)
 
 else:
-    H_cambody_aeroBody = (H_aeroRef_camRef)
+    H_cambody_aeroBody = H_aeroRef_camRef
 
 # ----------------------- MAVLINK HELPER FUNCTIONS -----------------------
 def progress(string):
@@ -139,7 +139,7 @@ class SlamLocalization(Node):
         self.prev_att = None
         self.prev_time = None
         self.create_timer(0.065, self.timer_callback)
-        # self.initial_compass_yaw = get_heading(vehicle) 
+        self.initial_compass_yaw = get_heading(vehicle) 
 
     def odom_callback(self, msg):
         self.last_msg = msg
@@ -193,7 +193,7 @@ class SlamLocalization(Node):
         V_aeroRef_aeroBody[1][3] = linear_vel.y
         V_aeroRef_aeroBody[2][3] = linear_vel.z
         V_aeroRef_aeroBody = H_aeroRef_camRef.dot(V_aeroRef_aeroBody)
-        rng_pos_z = 1 #-get_rangefinder_data(self.vehicle)
+        rng_pos_z = -get_rangefinder_data(self.vehicle)
 
         #angles
         rpy_rad = np.array( tf.euler_from_matrix(H_aeroRef_aeroBody, 'sxyz'))
