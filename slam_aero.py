@@ -33,7 +33,7 @@ rng_alt = 0
 rtabmap_started = False
 scale_factor = 1.0
 compass_enabled = 0 # Set to 1 to enable compass heading correction, 0 to disable
-camera_orientation = 2 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
+camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
@@ -139,7 +139,7 @@ class SlamLocalization(Node):
         self.prev_att = None
         self.prev_time = None
         self.create_timer(0.065, self.timer_callback)
-        self.initial_compass_yaw = get_heading(vehicle) 
+        # self.initial_compass_yaw = get_heading(vehicle) 
 
     def odom_callback(self, msg):
         self.last_msg = msg
@@ -174,10 +174,10 @@ class SlamLocalization(Node):
         msg = self.last_msg
         linear_vel = msg.twist.twist.linear
         position = msg.pose.pose.position
-        orientation = msg.pose.pose.orientation
+        q = msg.pose.pose.orientation
 
         # as per rtabmap coordinate system
-        q_cam = [orientation.w, orientation.x, orientation.y, orientation.z] 
+        q_cam = [q.w, q.x, q.y, q.z] 
 
         H_camRef_cambody = tf.quaternion_matrix(q_cam)
         H_camRef_cambody[0][3] = position.x
@@ -193,7 +193,7 @@ class SlamLocalization(Node):
         V_aeroRef_aeroBody[1][3] = linear_vel.y
         V_aeroRef_aeroBody[2][3] = linear_vel.z
         V_aeroRef_aeroBody = H_aeroRef_camRef.dot(V_aeroRef_aeroBody)
-        rng_pos_z = -get_rangefinder_data(self.vehicle)
+        rng_pos_z = 1 #-get_rangefinder_data(self.vehicle)
 
         #angles
         rpy_rad = np.array( tf.euler_from_matrix(H_aeroRef_aeroBody, 'sxyz'))
@@ -227,6 +227,7 @@ class SlamLocalization(Node):
                 progress("DEBUG: Raw pos xyz : {}".format( np.array( [position.x, position.y, position.z])))
                 progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix( H_aeroRef_aeroBody))))
                 print(f"Scaled Position: x={pos_x}, y={pos_y}, z={rng_pos_z}")
+                
 
         self.prev_pos = curr_pos
         self.prev_att = curr_att        
@@ -253,5 +254,5 @@ def main(args=None):
     slam_node.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     main()
