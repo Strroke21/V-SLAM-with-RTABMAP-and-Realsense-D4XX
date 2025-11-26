@@ -33,7 +33,7 @@ debug_enable = 1  # Set to 1 to enable debug messages
 rng_alt = 0
 rtabmap_started = False
 compass_enabled = 0 # Set to 1 to enable compass heading correction, 0 to disable
-camera_orientation = 2 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
+camera_orientation = 1 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
@@ -276,8 +276,3 @@ def main(args=None):
 if __name__ == '__main__': 
     main()
 
-
-
-# run command:
-# for ZED2i camera
-#python3 slam_aero2.py --ros_cam "ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:=/home/deathstroke/zed_conf.yaml" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py rtabmap_args:='--delete_db_on_start' stereo:=true left_image_topic:=/zed/zed_node/left_gray/image_rect_gray right_image_topic:=/zed/zed_node/right_gray/image_rect_gray left_camera_info_topic:=/zed/zed_node/left_gray/camera_info right_camera_info_topic:=/zed/zed_node/right_gray/camera_info frame_id:=zed_camera_link use_sim_time:=true approx_sync:=true qos:=2 rviz:=false queue_size:=100 imu_topic:=/zed/zed_node/imu/data"
