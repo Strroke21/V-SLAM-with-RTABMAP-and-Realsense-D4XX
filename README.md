@@ -170,15 +170,17 @@ EK3_SRC1_VELZ = 6 (you can set it to 6 if 1st flight test looks good)
 
 EK3_SRC1_YAW = 6 (ExternalNav)
 
-
 ```
-### **3 Run the script 
 
-### ***1 RGB-D SLAM with Zed2i
+### 3 Run the script
+
+---
+
+### 3.1 RGB-D SLAM with Zed2i
 
 ```
 python3 slam_aero.py --ros_cam "ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:=/home/deathstroke/zed_conf.yaml" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
-rtabmap_args:="--delete_db_on_start" \
+rtabmap_args:=\"--delete_db_on_start\" \
 rgb_topic:=/zed/zed_node/rgb/image_rect_color \
 depth_topic:=/zed/zed_node/depth/depth_registered \
 camera_info_topic:=/zed/zed_node/rgb/camera_info \
@@ -188,46 +190,87 @@ approx_sync:=true \
 qos:=2 \
 rviz:=false \
 queue_size:=100"
-
-```
-### ***2 RGB-D SLAM with Realsense D4XX series
-
-```
-python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py   enable_depth:=true   enable_color:=true   enable_sync:=true   depth_module.depth_profile:=848,480,90   rgb_camera.color_profile:=848,480,30 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py   rtabmap_args:="--delete_db_on_start"   rgb_topic:=/camera/camera/color/image_raw   depth_topic:=/camera/camera/depth/image_rect_raw   camera_info_topic:=/camera/camera/color/camera_info   frame_id:=camera_link   use_sim_time:=true   approx_sync:=true   qos:=2   rviz:=false   queue_size:=100"
-
 ```
 
-### ***3 Stereo SLAM with Zed2i 
+---
+
+### 3.2 RGB-D SLAM with Realsense D4XX series
 
 ```
-python3 slam_aero.py --ros_cam "ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:=/home/deathstroke/zed_conf.yaml" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py rtabmap_args:='--delete_db_on_start' stereo:=true left_image_topic:=/zed/zed_node/left_gray/image_rect_gray right_image_topic:=/zed/zed_node/right_gray/image_rect_gray left_camera_info_topic:=/zed/zed_node/left_gray/camera_info right_camera_info_topic:=/zed/zed_node/right_gray/camera_info frame_id:=zed_camera_link use_sim_time:=true approx_sync:=true qos:=2 rviz:=false queue_size:=100 imu_topic:=/zed/zed_node/imu/data"
-
-```
-### ***4 Stereo SLAM with Realsense D4XX Series
-
-```
-python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py enable_infra1:=true enable_infra2:=true  enable_color:=true   enable_sync:=true  rgb_camera.color_profile:=848,480,30 enable_sync:=true enable_gyro:=true enable_accel:=true unite_imu_method:=2 gyro_fps:=200 accel_fps:=200 depth_module.infra_profile:=848,480,90" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
-   rtabmap_args:="--delete_db_on_start" \
-   stereo:=true \
-   left_image_topic:=/camera/camera/infra1/image_rect_raw \
-   right_image_topic:=/camera/camera/infra2/image_rect_raw \
-   left_camera_info_topic:=/camera/camera/infra1/camera_info \
-   right_camera_info_topic:=/camera/camera/infra2/camera_info \
-   frame_id:=camera_link \
-   use_sim_time:=true \
-   approx_sync:=true \
-   qos:=2 \
-   rviz:=false \
-   queue_size:=100"
-
+python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py \
+enable_depth:=true enable_color:=true enable_sync:=true \
+depth_module.depth_profile:=848,480,90 \
+rgb_camera.color_profile:=848,480,30 \
+enable_sync:=true enable_gyro:=true enable_accel:=true \
+unite_imu_method:=2 gyro_fps:=200 accel_fps:=200" \
+--rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
+rtabmap_args:=\"--delete_db_on_start\" \
+rgb_topic:=/camera/camera/color/image_raw \
+depth_topic:=/camera/camera/depth/image_rect_raw \
+camera_info_topic:=/camera/camera/color/camera_info \
+frame_id:=camera_link \
+use_sim_time:=true \
+approx_sync:=true \
+qos:=2 \
+rviz:=false \
+queue_size:=100"
 ```
 
-### ***5 Stereo SLAM and RGB-D SLAM with custom stereo camera
+---
+
+### 3.3 Stereo SLAM with Zed2i
+
+```
+python3 slam_aero.py --ros_cam "ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:=/home/deathstroke/zed_conf.yaml" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
+rtabmap_args:='--delete_db_on_start' \
+stereo:=true \
+left_image_topic:=/zed/zed_node/left_gray/image_rect_gray \
+right_image_topic:=/zed/zed_node/right_gray/image_rect_gray \
+left_camera_info_topic:=/zed/zed_node/left_gray/camera_info \
+right_camera_info_topic:=/zed/zed_node/right_gray/camera_info \
+frame_id:=zed_camera_link \
+use_sim_time:=true \
+approx_sync:=true \
+qos:=2 \
+rviz:=false \
+queue_size:=100 \
+imu_topic:=/zed/zed_node/imu/data"
+```
+
+---
+
+### 3.4 Stereo SLAM with Realsense D4XX Series
+
+```
+python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py \
+enable_infra1:=true enable_infra2:=true enable_color:=true enable_sync:=true \
+rgb_camera.color_profile:=848,480,30 \
+enable_sync:=true enable_gyro:=true enable_accel:=true \
+unite_imu_method:=2 gyro_fps:=200 accel_fps:=200 \
+depth_module.infra_profile:=848,480,90" \
+--rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
+rtabmap_args:=\"--delete_db_on_start\" \
+stereo:=true \
+left_image_topic:=/camera/camera/infra1/image_rect_raw \
+right_image_topic:=/camera/camera/infra2/image_rect_raw \
+left_camera_info_topic:=/camera/camera/infra1/camera_info \
+right_camera_info_topic:=/camera/camera/infra2/camera_info \
+frame_id:=camera_link \
+use_sim_time:=true \
+approx_sync:=true \
+qos:=2 \
+rviz:=false \
+queue_size:=100"
+```
+
+---
+
+### 3.5 Stereo SLAM and RGB-D SLAM with custom stereo camera
 
 ```
 python3 slam_aero.py --ros_cam "your ros2 camera launch command" --rtabmap "your rtabmap launch command"
-
 ```
+
 
 ### Flight Tests with RTABMAP SLAM
 
