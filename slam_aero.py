@@ -3,7 +3,6 @@
 import rclpy
 from rclpy.node import Node
 import time
-from transformations import euler_from_quaternion
 from pymavlink import mavutil
 import numpy as np
 from nav_msgs.msg import Odometry
@@ -13,6 +12,8 @@ import subprocess
 import math
 import transformations as tf
 import sys
+import argparse
+import shlex
 
 os.environ["MAVLINK20"] = "1"
 
@@ -31,7 +32,6 @@ debug_enable = 1  # Set to 1 to enable debug messages
 # ----------------------- GLOBAL VARIABLES -----------------------
 rng_alt = 0
 rtabmap_started = False
-scale_factor = 1.0
 compass_enabled = 0 # Set to 1 to enable compass heading correction, 0 to disable
 camera_orientation = 2 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
@@ -56,18 +56,17 @@ if camera_orientation == 1:  # downfacing (90° pitch down)
     [1, 0,  0,  0],   
     [0,  0,  0, 1]
     ])
-    # H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/2,0)).dot(H_aeroRef_camRef)
     H_cambody_aeroBody = H_aeroRef_camRef
 
 elif camera_orientation == 2: # 45 degree tilted down forward
+    c = math.sqrt(2)/2
     H_aeroRef_camRef = np.array([
-    [0.7071, 0, 0.7071, 0],   # X forward --> forward
+    [c, 0, c, 0],   # X forward --> forward
     [0, -1, 0, 0],   # Y left --> right
-    [0.7071, 0, -0.7071, 0],   # Z up --> down
+    [c, 0, -c, 0],   # Z up --> down
     [0,  0,  0, 1]
     ])
-    # H_cambody_aeroBody = (tf.euler_matrix(0,-math.pi/4,0)).dot(H_aeroRef_camRef)
-    H_cambody_aeroBody = H_aeroRef_camRef
+    H_cambody_aeroBody = np.linalg.inv(H_aeroRef_camRef)
 
 else:
     H_aeroRef_camRef = np.array([
@@ -168,30 +167,6 @@ class SlamLocalization(Node):
     def timer_callback(self):
         global rtabmap_started
 
-        # Launch RTAB-Map if height > threshold
-        if not rtabmap_started:
-            time.sleep(RTABMAP_LAUNCH_DELAY)
-            subprocess.Popen([
-                "ros2", "launch", "rtabmap_launch", "rtabmap.launch.py",
-                "rtabmap_args:='--delete_db_on_start'",
-                "stereo:=true",
-                "left_image_topic:=/zed/zed_node/left_gray/image_rect_gray",
-                "right_image_topic:=/zed/zed_node/right_gray/image_rect_gray",
-                "left_camera_info_topic:=/zed/zed_node/left_gray/camera_info",
-                "right_camera_info_topic:=/zed/zed_node/right_gray/camera_info",
-                "frame_id:=zed_camera_link",
-                "use_sim_time:=true",
-                "approx_sync:=true",
-                "qos:=2",
-                "rviz:=false",
-                "queue_size:=100",
-                "imu_topic:=/zed/zed_node/imu/data"
-            ])
-            rtabmap_started = True
-
-        if self.last_msg is None:
-            return
-
         msg = self.last_msg
         linear_vel = msg.twist.twist.linear
         position = msg.pose.pose.position
@@ -260,24 +235,49 @@ class SlamLocalization(Node):
 
 # ----------------------- MAIN -----------------------
 def main(args=None):
-    rclpy.init(args=args)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ros_cam", type=str, required=True)
+    parser.add_argument("--rtabmap", type=str, required=True)
+
+    # FIRST parse arguments
+    args = parser.parse_args()
+
+    # THEN split commands
+    ros_cam_cmd = shlex.split(args.ros_cam)
+    rtabmap_cmd = shlex.split(args.rtabmap)
+
+    # Now safe to use args
+    rclpy.init(args=None)
+
     vehicle = connect_vehicle(FCU_ADDR, FCU_BAUD)
     enable_data_stream(vehicle, STREAM_RATE)
     time.sleep(1)
+
     set_default_home_position(vehicle, HOME_LAT, HOME_LON, HOME_ALT)
-    print("Launching ZED2i camera...")
-    subprocess.Popen([
-        "ros2", "launch", "zed_wrapper", "zed_camera.launch.py",
-        "camera_model:=zed2i",
-        "enable_ipc:=false",
-        'ros_params_override_path:=/home/deathstroke/zed_conf.yaml'
-    ])
-    print("Waiting 20 seconds for ZED2i initialization...")
+
+    print("Launching the camera...")
+    subprocess.Popen(ros_cam_cmd)
+
+    print("Waiting for camera initialization...")
     time.sleep(20)
+
+    print("Launching RTAB-Map...")
+    subprocess.Popen(rtabmap_cmd)
+
+    time.sleep(RTABMAP_LAUNCH_DELAY)
+
     slam_node = SlamLocalization(vehicle)
     rclpy.spin(slam_node)
+
     slam_node.destroy_node()
     rclpy.shutdown()
 
+
 if __name__ == '__main__': 
     main()
+
+
+
+# run command:
+# for ZED2i camera
+#python3 slam_aero2.py --ros_cam "ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:=/home/deathstroke/zed_conf.yaml" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py rtabmap_args:='--delete_db_on_start' stereo:=true left_image_topic:=/zed/zed_node/left_gray/image_rect_gray right_image_topic:=/zed/zed_node/right_gray/image_rect_gray left_camera_info_topic:=/zed/zed_node/left_gray/camera_info right_camera_info_topic:=/zed/zed_node/right_gray/camera_info frame_id:=zed_camera_link use_sim_time:=true approx_sync:=true qos:=2 rviz:=false queue_size:=100 imu_topic:=/zed/zed_node/imu/data"
