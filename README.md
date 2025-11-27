@@ -176,7 +176,7 @@ EK3_SRC1_YAW = 6 (ExternalNav)
 
 ---
 
-### 3.1 RGB-D SLAM with Zed2i
+#### 3.1 RGB-D SLAM with Zed2i
 
 ```
 python3 slam_aero.py --ros_cam "ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:=/home/deathstroke/zed_conf.yaml" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
