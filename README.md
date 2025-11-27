@@ -194,7 +194,7 @@ queue_size:=100"
 
 ---
 
-### 3.2 RGB-D SLAM with Realsense D4XX series
+#### 3.2 RGB-D SLAM with Realsense D4XX series
 
 ```
 python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py \
@@ -218,7 +218,7 @@ queue_size:=100"
 
 ---
 
-### 3.3 Stereo SLAM with Zed2i
+#### 3.3 Stereo SLAM with Zed2i
 
 ```
 python3 slam_aero.py --ros_cam "ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2i enable_ipc:=false ros_params_override_path:=/home/deathstroke/zed_conf.yaml" --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
@@ -239,7 +239,7 @@ imu_topic:=/zed/zed_node/imu/data"
 
 ---
 
-### 3.4 Stereo SLAM with Realsense D4XX Series
+#### 3.4 Stereo SLAM with Realsense D4XX Series
 
 ```
 python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py \
@@ -265,7 +265,7 @@ queue_size:=100"
 
 ---
 
-### 3.5 Stereo SLAM and RGB-D SLAM with custom stereo camera
+#### 3.5 Stereo SLAM and RGB-D SLAM with custom stereo camera
 
 ```
 python3 slam_aero.py --ros_cam "your ros2 camera launch command" --rtabmap "your rtabmap launch command"
