@@ -38,7 +38,6 @@ camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) fo
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
 use_rangefinder = 0  # Set to 1 to use rangefinder data for altitude correction
-use_compass = 0    # Set to 1 to use compass data for heading correction
 
 if camera_orientation == 0:
     H_aeroRef_camRef = np.array([
@@ -158,7 +157,7 @@ class SlamLocalization(Node):
         self.prev_att = None
         self.prev_time = None
         self.create_timer(0.065, self.timer_callback)
-        if use_compass == 1:
+        if compass_enabled == 1:
             self.initial_compass_yaw = get_heading(vehicle) 
 
     def odom_callback(self, msg):
