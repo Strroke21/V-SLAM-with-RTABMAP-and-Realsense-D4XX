@@ -28,7 +28,6 @@ RTABMAP_LAUNCH_DELAY = 5
 STREAM_RATE = 100
 
 debug_enable = 1  # Set to 1 to enable debug messages
-
 # ----------------------- GLOBAL VARIABLES -----------------------
 rng_alt = 0
 compass_enabled = 0 # Set to 1 to enable compass heading correction, 0 to disable
@@ -117,9 +116,9 @@ def VehicleMode(vehicle, mode):
                               mode_id)
 
 def get_heading(vehicle):
-    msg = vehicle.recv_match(type='AHRS2', blocking=True)
+    msg = vehicle.recv_match(type='VFR_HUD', blocking=True)
     if msg:
-        return msg.yaw
+        return msg.heading # in degrees
 
 
 def scaling_factor(true_altitude, est_altitude):
