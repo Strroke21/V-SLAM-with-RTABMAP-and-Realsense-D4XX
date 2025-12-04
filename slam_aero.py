@@ -24,14 +24,13 @@ HOME_LAT = 19.1345054
 HOME_LON = 72.9120648
 HOME_ALT = 53
 RANGEFINDER_THRESHOLD = 0.1
-RTABMAP_LAUNCH_DELAY = 5
+RTABMAP_LAUNCH_DELAY = 5 
 STREAM_RATE = 100
 
 debug_enable = 1  # Set to 1 to enable debug messages
 
 # ----------------------- GLOBAL VARIABLES -----------------------
 rng_alt = 0
-rtabmap_started = False
 compass_enabled = 0 # Set to 1 to enable compass heading correction, 0 to disable
 camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
@@ -48,7 +47,7 @@ if camera_orientation == 0:
     ])
     H_cambody_aeroBody = H_aeroRef_camRef
 
-if camera_orientation == 1:  # downfacing (90° pitch down)
+elif camera_orientation == 1:  # downfacing (90° pitch down)
     H_aeroRef_camRef = np.array([
     [0,  0, 1, 0],   
     [0,  -1,  0, 0],  
