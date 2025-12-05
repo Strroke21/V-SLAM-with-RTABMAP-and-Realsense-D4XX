@@ -156,7 +156,7 @@ class SlamLocalization(Node):
         self.prev_time = None
         self.create_timer(0.065, self.timer_callback)
         if compass_enabled == 1:
-            self.initial_compass_yaw = get_heading(vehicle) 
+            self.initial_compass_yaw = math.radians(get_heading(vehicle)) #yaw in radians 
 
     def odom_callback(self, msg):
         self.last_msg = msg
