@@ -35,7 +35,7 @@ camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) fo
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
 V_aeroRef_aeroBody = None
-use_rangefinder = 0  # Set to 1 to use rangefinder data for altitude correction
+use_rangefinder = 1  # Set to 1 to use rangefinder data for altitude correction
 
 if camera_orientation == 0:
     H_aeroRef_camRef = np.array([
@@ -49,7 +49,7 @@ if camera_orientation == 0:
 elif camera_orientation == 1:  # downfacing (90° pitch down)
     H_aeroRef_camRef = np.array([
     [0,  0, 1, 0],   
-    [0,  -1,  0, 0],  
+    [0, -1, 0, 0],  
     [1, 0,  0,  0],   
     [0,  0,  0, 1]
     ])
