@@ -30,7 +30,7 @@ STREAM_RATE = 100
 debug_enable = 1  # Set to 1 to enable debug messages
 # ----------------------- GLOBAL VARIABLES -----------------------
 rng_alt = 0
-compass_enabled = 0 # Set to 1 to enable compass heading correction, 0 to disable
+compass_enabled = 1 # Set to 1 to enable compass heading correction, 0 to disable
 camera_orientation = 0 # 0: forward, 1: downfacing, 2: 45degree (tilted down) forward
 # Important note for downfacing camera: you need to tilt the vehicle's nose up a little - not flat - before you run the script, otherwise the initial yaw will be randomized,
 H_aeroRef_aeroBody = None
