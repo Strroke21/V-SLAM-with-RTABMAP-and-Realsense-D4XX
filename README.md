@@ -199,8 +199,8 @@ queue_size:=100"
 ```
 python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py \
 enable_depth:=true enable_color:=true enable_sync:=true \
-depth_module.depth_profile:=848,480,90 \
-rgb_camera.color_profile:=848,480,30 \
+depth_module.depth_profile:=640,480,30 \
+rgb_camera.color_profile:=640,480,30 \
 enable_sync:=true enable_gyro:=true enable_accel:=true \
 unite_imu_method:=2 gyro_fps:=200 accel_fps:=200" \
 --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
@@ -244,10 +244,10 @@ imu_topic:=/zed/zed_node/imu/data"
 ```
 python3 slam_aero.py --ros_cam "ros2 launch realsense2_camera rs_launch.py \
 enable_infra1:=true enable_infra2:=true enable_color:=true enable_sync:=true \
-rgb_camera.color_profile:=848,480,30 \
+rgb_camera.color_profile:=640,480,30 \
 enable_sync:=true enable_gyro:=true enable_accel:=true \
 unite_imu_method:=2 gyro_fps:=200 accel_fps:=200 \
-depth_module.infra_profile:=848,480,90" \
+depth_module.infra_profile:=640,480,30" \
 --rtabmap "ros2 launch rtabmap_launch rtabmap.launch.py \
 rtabmap_args:=\"--delete_db_on_start\" \
 stereo:=true \
