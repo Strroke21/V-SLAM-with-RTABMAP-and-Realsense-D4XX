@@ -89,19 +89,37 @@ ros2 run demo_nodes_py listener
 ```bash
 # Install dependencies
 sudo apt update
-sudo apt install -y build-essential cmake pkg-config libjpeg-dev libtiff-dev libpng-dev libgtk-3-dev libcanberra-gtk* libatlas-base-dev gfortran python3-dev
+sudo apt install -y build-essential cmake pkg-config \
+libjpeg-dev libtiff-dev libpng-dev \
+libgtk-3-dev libcanberra-gtk* \
+libatlas-base-dev gfortran python3-dev
 
-# Download OpenCV
+# Download OpenCV core
 wget -O opencv.zip https://github.com/opencv/opencv/archive/4.8.0.zip
 unzip opencv.zip
+
+# Download OpenCV contrib modules
+wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.8.0.zip
+unzip opencv_contrib.zip
+
+# Enter OpenCV directory
 cd opencv-4.8.0
 
-# Build OpenCV
+# Build OpenCV with contrib modules
 mkdir build
 cd build
-cmake ..
+
+cmake -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.8.0/modules \
+      -D BUILD_EXAMPLES=ON \
+      ..
+
 make -j$(nproc)
 sudo make install
+
+# Refresh linker cache
+sudo ldconfig
 ```
 
 ## III. Camera Node Setup
