@@ -109,11 +109,17 @@ cd opencv-4.8.0
 mkdir build
 cd build
 
-cmake -D CMAKE_BUILD_TYPE=Release \
-      -D CMAKE_INSTALL_PREFIX=/usr/local \
-      -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.8.0/modules \
-      -D BUILD_EXAMPLES=ON \
-      ..
+cmake \
+-D CMAKE_BUILD_TYPE=Release \
+-D CMAKE_INSTALL_PREFIX=/usr/local \
+-D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+-D BUILD_opencv_java=OFF \
+-D BUILD_JAVA=OFF \
+-D BUILD_TESTS=OFF \
+-D BUILD_PERF_TESTS=OFF \
+-D BUILD_EXAMPLES=OFF \
+-D WITH_OPENGL=ON \
+..
 
 make -j$(nproc)
 sudo make install
