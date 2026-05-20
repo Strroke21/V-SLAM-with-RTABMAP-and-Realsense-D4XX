@@ -196,6 +196,10 @@ EK3_SRC1_YAW = 6 (ExternalNav)
 
 ```
 
+### Zed cam param enable/diable path
+
+```  nano ~/zed-ros2/install/zed_wrapper/share/zed_wrapper/config/common_stereo.yaml ```
+
 ### 3 Run the script
 
 ---
