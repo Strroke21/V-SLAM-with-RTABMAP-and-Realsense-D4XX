@@ -63,7 +63,8 @@ sudo apt install ros-dev-tools
 To start working with ROS 2, source the setup script in each terminal session.
 
 ```bash
-source /opt/ros/humble/setup.bash
+
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && source ~/.bashrc
 ```
 
 ### **5. Try Some Examples**
