@@ -1,1 +1,0 @@
-/home/deathstroke/Desktop/slam_ros/build/slam_localization/ament_cmake_environment_hooks/local_setup.sh
